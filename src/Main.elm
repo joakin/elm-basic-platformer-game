@@ -44,7 +44,7 @@ type alias GameState =
         { charSpriteSheet : Texture
         , tileSpriteSheet : Texture
         , char : Sprites.Char
-        , tiles : Sprites.Tile
+        , tiles : Sprites.Tiles
         }
     , player : Player
     , map : Map
@@ -58,7 +58,7 @@ type alias Map =
 type alias MapTile =
     { physics : Physics.Object
     , kind : MapTileKind
-    , sprite : Texture
+    , texture : Texture
     }
 
 
@@ -151,23 +151,23 @@ init random =
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update msg ({ input, count, width, height, game } as model) =
     -- let
     --     _ =
     --         Debug.log "msg, model" ( msg, model )
     -- in
     -- Debug.log "ret" <|
-    case ( msg, model.game ) of
+    case ( msg, game ) of
         ( Frame delta, GameStarted state ) ->
             let
-                count =
-                    model.count + Debug.log "delta" delta
+                newCount =
+                    count + delta
 
                 newGame =
-                    state |> tick model.width model.height count delta model.input
+                    state |> tick width height newCount delta input
             in
             ( { model
-                | count = count
+                | count = newCount
                 , game = GameStarted newGame
               }
             , Cmd.none
@@ -181,8 +181,8 @@ update msg model =
             , Cmd.none
             )
 
-        ( Resized width height, _ ) ->
-            ( { model | width = toFloat width, height = toFloat height }
+        ( Resized newWidth newHeight, _ ) ->
+            ( { model | width = toFloat newWidth, height = toFloat newHeight }
             , Cmd.none
             )
 
@@ -216,7 +216,7 @@ update msg model =
                                 Sprites.char charSpriteSheet
 
                             tiles =
-                                Sprites.tile tileSpriteSheet
+                                Sprites.tiles tileSpriteSheet
                         in
                         { model
                             | game =
@@ -229,14 +229,18 @@ update msg model =
                                         }
                                     , player =
                                         let
-                                            { width, height } =
+                                            cd =
                                                 Texture.dimensions char.idle
                                         in
                                         { physics =
                                             { x = 100
                                             , y = 20
-                                            , w = width
-                                            , h = height
+                                            , w = cd.width
+                                            , h = cd.height
+                                            , bx = 15
+                                            , by = 15
+                                            , bw = cd.width - 15 * 2
+                                            , bh = cd.height - 15
                                             , vx = 0
                                             , vy = 0
                                             , ax = 0
@@ -249,24 +253,56 @@ update msg model =
                                         }
                                     , map =
                                         let
-                                            { width, height } =
-                                                Texture.dimensions tiles.soilGrass
+                                            tile get mapTileKind x y =
+                                                let
+                                                    sprite =
+                                                        get tiles
+
+                                                    d =
+                                                        Texture.dimensions sprite.texture
+                                                in
+                                                { kind = mapTileKind
+                                                , physics =
+                                                    { emptyObject
+                                                        | x = x
+                                                        , y = y
+                                                        , w = d.width
+                                                        , h = d.height
+                                                        , bx = sprite.bx
+                                                        , by = sprite.by
+                                                        , bw = sprite.bw
+                                                        , bh = sprite.bh
+                                                    }
+                                                , texture = sprite.texture
+                                                }
 
                                             emptyObject =
                                                 Physics.emptyObject
                                         in
-                                        [ { kind = Platform, physics = { emptyObject | x = 50 + 0 * width, y = 450, w = width, h = height }, sprite = tiles.soilGrass }
-                                        , { kind = Platform, physics = { emptyObject | x = 50 + 1 * width, y = 450, w = width, h = height }, sprite = tiles.soilGrass }
-                                        , { kind = Platform, physics = { emptyObject | x = 50 + 2 * width, y = 480, w = width, h = height }, sprite = tiles.soilGrass }
-                                        , { kind = Platform, physics = { emptyObject | x = 50 + 3 * width, y = 550, w = width, h = height }, sprite = tiles.soilGrass }
-                                        , { kind = Platform, physics = { emptyObject | x = 50 + 3 * width, y = 300, w = width, h = height }, sprite = tiles.soilGrass }
-                                        , { kind = Platform, physics = { emptyObject | x = 50 + 4 * width, y = 650, w = width, h = height }, sprite = tiles.soilGrass }
-                                        , { kind = Platform, physics = { emptyObject | x = 50 + 5 * width, y = 600, w = width, h = height }, sprite = tiles.soilGrass }
-                                        , { kind = Platform, physics = { emptyObject | x = 50 + 6 * width, y = 550, w = width, h = height }, sprite = tiles.soilGrass }
-                                        , { kind = Platform, physics = { emptyObject | x = 50 + 7 * width, y = 500, w = width, h = height }, sprite = tiles.soilGrass }
-                                        , { kind = Platform, physics = { emptyObject | x = 50 + 6 * width, y = 200, w = width, h = height }, sprite = tiles.soilGrass }
-                                        , { kind = Platform, physics = { emptyObject | x = 50 + 7 * width, y = 200, w = width, h = height }, sprite = tiles.soilGrass }
-                                        , { kind = Platform, physics = { emptyObject | x = 50 + 8 * width, y = 200, w = width, h = height }, sprite = tiles.soilGrass }
+                                        [ tile .soilGrass Platform (50 + 0 * 64) 450
+                                        , tile .soilGrass Platform (50 + 1 * 64) 450
+                                        , tile .soilGrass Platform (50 + 2 * 64) 480
+                                        , tile .soilGrass Platform (50 + 3 * 64) 550
+                                        , tile .soilGrass Platform (50 + 4 * 64) 650
+                                        , tile .soilGrass Platform (50 + 5 * 64) 600
+                                        , tile .soilGrass Platform (50 + 6 * 64) 550
+                                        , tile .soilGrass Platform (50 + 7 * 64) 500
+                                        , tile .soilGrassPlatform Platform (50 + 3 * 64) 300
+                                        , tile .soilGrassPlatform Platform (50 + 6 * 64) 200
+                                        , tile .soilGrassPlatform Platform (50 + 7 * 64) 200
+                                        , tile .soilGrassPlatform Platform (50 + 8 * 64) 200
+                                        , tile .soilSand Platform (700 + 0 * 64) 450
+                                        , tile .soilSand Platform (700 + 1 * 64) 450
+                                        , tile .soilSand Platform (700 + 2 * 64) 480
+                                        , tile .soilSand Platform (700 + 3 * 64) 550
+                                        , tile .soilSand Platform (700 + 4 * 64) 650
+                                        , tile .soilSand Platform (700 + 5 * 64) 600
+                                        , tile .soilSand Platform (700 + 6 * 64) 550
+                                        , tile .soilSand Platform (700 + 7 * 64) 500
+                                        , tile .soilSandPlatform Platform (700 + 3 * 64) 300
+                                        , tile .soilSandPlatform Platform (700 + 6 * 64) 200
+                                        , tile .soilSandPlatform Platform (700 + 7 * 64) 200
+                                        , tile .soilSandPlatform Platform (700 + 8 * 64) 200
                                         ]
                                     }
                         }
@@ -453,11 +489,7 @@ physics delta ({ player } as state) =
 
 
 updateKeys : String -> Bool -> Model -> Model
-updateKeys key isDown model =
-    let
-        input =
-            model.input
-    in
+updateKeys key isDown ({ input } as model) =
     case key of
         "ArrowUp" ->
             { model | input = { input | up = isDown } }
@@ -500,8 +532,12 @@ render count width height game =
             [ text [ font { family = "sans-serif", size = 48 } ] ( width / 2, height / 2 ) "Loading..." ]
 
         GameStarted { assets, player, map } ->
+            -- Sprites.tileSpriteSheetDebugRenderable assets.tileSpriteSheet ++
             renderMap map
-                ++ [ renderPlayer count player ]
+                ++ [ renderPlayer count player
+
+                   -- , debugBox ( player.physics.x + player.physics.bx, player.physics.y + player.physics.by ) player.physics.bw player.physics.bh
+                   ]
 
         LoadingFailed ->
             [ text [ font { family = "sans-serif", size = 48 } ] ( width / 2, height / 2 ) "Loading failed.\nPlease reload." ]
@@ -511,15 +547,20 @@ renderMap : Map -> List Renderable
 renderMap map =
     List.map
         (\t ->
-            texture [] ( t.physics.x, t.physics.y ) t.sprite
+            texture [] ( t.physics.x, t.physics.y ) t.texture
         )
+        -- map
+        -- ++ List.map
+        --     (\t ->
+        --         debugBox ( t.physics.x + t.physics.bx, t.physics.y + t.physics.by ) t.physics.bw t.physics.bh
+        --     )
         map
 
 
 renderPlayer : Float -> Player -> Renderable
 renderPlayer count ({ sprites } as player) =
     let
-        sprite =
+        playerTexture =
             case player.status of
                 Jumping ->
                     sprites.jump
@@ -546,7 +587,7 @@ renderPlayer count ({ sprites } as player) =
                     0
 
         dimensions =
-            Texture.dimensions sprite
+            Texture.dimensions playerTexture
 
         centerOffsetX =
             dimensions.width / 2
@@ -570,7 +611,7 @@ renderPlayer count ({ sprites } as player) =
             ]
         ]
         ( -centerOffsetX, -centerOffsetY )
-        sprite
+        playerTexture
 
 
 debugBox pos w h =

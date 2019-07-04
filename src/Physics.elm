@@ -14,6 +14,10 @@ type alias Object =
     , y : Float
     , w : Float
     , h : Float
+    , bx : Float
+    , by : Float
+    , bw : Float
+    , bh : Float
     , vx : Float
     , vy : Float
     , ax : Float
@@ -21,11 +25,16 @@ type alias Object =
     }
 
 
+emptyObject : Object
 emptyObject =
     { x = 0
     , y = 0
     , w = 0
     , h = 0
+    , bx = 0
+    , by = 0
+    , bw = 0
+    , bh = 0
     , vx = 0
     , vy = 0
     , ax = 0
@@ -50,17 +59,17 @@ collisionCheck o1 o2 =
     -- get the vectors to check against
     let
         vX =
-            (o1.x + (o1.w / 2)) - (o2.x + (o2.w / 2))
+            (o1.x + o1.bx + (o1.bw / 2)) - (o2.x + o2.bx + (o2.bw / 2))
 
         vY =
-            (o1.y + (o1.h / 2)) - (o2.y + (o2.h / 2))
+            (o1.y + o1.by + (o1.bh / 2)) - (o2.y + o2.by + (o2.bh / 2))
 
         -- add the half widths and half heights of the objects
         hWidths =
-            (o1.w / 2) + (o2.w / 2)
+            (o1.bw / 2) + (o2.bw / 2)
 
         hHeights =
-            (o1.h / 2) + (o2.h / 2)
+            (o1.bh / 2) + (o2.bh / 2)
 
         colDir =
             Nothing
@@ -96,10 +105,10 @@ collisionCheck o1 o2 =
 standingOn : Object -> Object -> Bool
 standingOn o2 o1 =
     if
-        (o1.x + o1.w > o2.x)
-            && (o1.x < o2.x + o2.w)
-            && (o1.y + o1.h >= o2.y)
-            && (o1.y < o2.y + o2.h)
+        (o1.x + o1.bx + o1.bw > o2.x + o2.bx)
+            && (o1.x + o1.bx < o2.x + o2.bx + o2.bw)
+            && (o1.y + o1.by + o1.bh >= o2.y + o2.by)
+            && (o1.y + o1.by < o2.y + o2.by + o2.bh)
     then
         True
 
