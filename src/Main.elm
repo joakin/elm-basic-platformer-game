@@ -57,6 +57,8 @@ type alias Map =
 type alias MapTile =
     { x : Float
     , y : Float
+    , w : Float
+    , h : Float
     , kind : MapTileKind
     , sprite : Texture
     }
@@ -172,11 +174,6 @@ update msg model =
 
                 newGame =
                     state |> tick model.width model.height count delta model.input
-
-                -- _ =
-                --     Debug.log "player" state.player
-                -- _ =
-                --     Debug.log "<- player" newGame.player
             in
             ( { model
                 | count = count
@@ -262,14 +259,17 @@ update msg model =
                                             { width, height } =
                                                 Texture.dimensions tiles.soilGrass
                                         in
-                                        [ { kind = Platform, x = 50 + 0 * width, y = 450, sprite = tiles.soilGrass }
-                                        , { kind = Platform, x = 50 + 1 * width, y = 450, sprite = tiles.soilGrass }
-                                        , { kind = Platform, x = 50 + 2 * width, y = 480, sprite = tiles.soilGrass }
-                                        , { kind = Platform, x = 50 + 3 * width, y = 550, sprite = tiles.soilGrass }
-                                        , { kind = Platform, x = 50 + 4 * width, y = 650, sprite = tiles.soilGrass }
-                                        , { kind = Platform, x = 50 + 5 * width, y = 600, sprite = tiles.soilGrass }
-                                        , { kind = Platform, x = 50 + 6 * width, y = 550, sprite = tiles.soilGrass }
-                                        , { kind = Platform, x = 50 + 7 * width, y = 500, sprite = tiles.soilGrass }
+                                        [ { kind = Platform, x = 50 + 0 * width, y = 450, w = width, h = height, sprite = tiles.soilGrass }
+                                        , { kind = Platform, x = 50 + 1 * width, y = 450, w = width, h = height, sprite = tiles.soilGrass }
+                                        , { kind = Platform, x = 50 + 2 * width, y = 480, w = width, h = height, sprite = tiles.soilGrass }
+                                        , { kind = Platform, x = 50 + 3 * width, y = 550, w = width, h = height, sprite = tiles.soilGrass }
+                                        , { kind = Platform, x = 50 + 4 * width, y = 650, w = width, h = height, sprite = tiles.soilGrass }
+                                        , { kind = Platform, x = 50 + 5 * width, y = 600, w = width, h = height, sprite = tiles.soilGrass }
+                                        , { kind = Platform, x = 50 + 6 * width, y = 550, w = width, h = height, sprite = tiles.soilGrass }
+                                        , { kind = Platform, x = 50 + 7 * width, y = 500, w = width, h = height, sprite = tiles.soilGrass }
+                                        , { kind = Platform, x = 50 + 6 * width, y = 200, w = width, h = height, sprite = tiles.soilGrass }
+                                        , { kind = Platform, x = 50 + 7 * width, y = 200, w = width, h = height, sprite = tiles.soilGrass }
+                                        , { kind = Platform, x = 50 + 8 * width, y = 200, w = width, h = height, sprite = tiles.soilGrass }
                                         ]
                                     }
                         }
@@ -332,8 +332,8 @@ tick width height count delta input state =
                 50 {- px per second -} * delta / 1000
 
             jumpAcc =
-                if player.grounded then
-                    10
+                if player.grounded && player.vy >= 0 then
+                    20
 
                 else if player.vy > 0 then
                     gravity delta / 2
@@ -384,114 +384,123 @@ tick width height count delta input state =
         |> physics delta
 
 
-collisions : GameState -> GameState -> GameState
-collisions oldState ({ player, map } as state) =
+collisions : GameState -> GameState
+collisions ({ player, map } as state) =
     let
-        ( newPlayerY, newMapY ) =
-            List.foldr (collisionStep moveY) ( { player | grounded = False }, [] ) map
-
         ( newPlayer, newMap ) =
-            List.foldr (collisionStep moveX) ( newPlayerY, [] ) newMapY
+            List.foldr collisionStep ( { player | grounded = False }, [] ) map
     in
     { state | player = newPlayer, map = newMap }
 
 
-collisionStep : (Player -> MapTile -> ( Player, MapTile )) -> MapTile -> ( Player, Map ) -> ( Player, Map )
-collisionStep resolve tile ( player, map ) =
+type CollisionType
+    = CL
+    | CR
+    | CT
+    | CB
+
+
+collisionCheck : Player -> MapTile -> ( Maybe CollisionType, Player )
+collisionCheck player tile =
+    -- get the vectors to check against
+    let
+        vX =
+            (player.x + (player.w / 2)) - (tile.x + (tile.w / 2))
+
+        vY =
+            (player.y + (player.h / 2)) - (tile.y + (tile.h / 2))
+
+        -- add the half widths and half heights of the objects
+        hWidths =
+            (player.w / 2) + (tile.w / 2)
+
+        hHeights =
+            (player.h / 2) + (tile.h / 2)
+
+        colDir =
+            Nothing
+    in
+    -- if the x and y vector are less than the half width or half height, they
+    -- we must be inside the object, causing a collision
+    if abs vX < hWidths && abs vY < hHeights then
+        -- figures out on which side we are colliding (top, bottom, left, or right)
+        let
+            oX =
+                hWidths - abs vX
+
+            oY =
+                hHeights - abs vY
+        in
+        if oX >= oY then
+            if vY > 0 then
+                ( Just CT, { player | y = player.y + oY } )
+
+            else
+                ( Just CB, { player | y = player.y - oY } )
+
+        else if vX > 0 then
+            ( Just CL, { player | x = player.x + oX } )
+
+        else
+            ( Just CR, { player | x = player.x - oX } )
+
+    else
+        ( Nothing, player )
+
+
+collisionStep : MapTile -> ( Player, Map ) -> ( Player, Map )
+collisionStep tile ( player, map ) =
     case tile.kind of
         Platform ->
             let
-                { width, height } =
-                    Texture.dimensions tile.sprite
+                ( maybeCollisionDirection, movedPlayer ) =
+                    collisionCheck player tile
 
-                ( newPlayer, newTile ) =
-                    resolve player tile
+                newPlayer =
+                    case maybeCollisionDirection of
+                        Just CB ->
+                            { movedPlayer | grounded = True, vy = 0 }
+
+                        Just CT ->
+                            { movedPlayer | vy = 0 }
+
+                        Just CR ->
+                            { movedPlayer | vx = 0 }
+
+                        Just CL ->
+                            { movedPlayer | vx = 0 }
+
+                        Nothing ->
+                            movedPlayer
             in
-            ( newPlayer
-            , newTile :: map
+            ( if standingOn newPlayer tile then
+                { newPlayer | grounded = True }
+
+              else
+                newPlayer
+            , tile :: map
             )
 
 
-collides : Float -> Float -> Float -> Float -> Float -> Float -> Float -> Float -> Bool
-collides x1 y1 w1 h1 x2 y2 w2 h2 =
+standingOn : Player -> MapTile -> Bool
+standingOn player tile =
     if
-        (x1 + w1 > x2)
-            && (x1 < x2 + w2)
-            && (y1 + h1 > y2)
-            && (y1 < y2 + h2)
+        (player.x + player.w > tile.x)
+            && (player.x < tile.x + tile.w)
+            && (player.y + player.h >= tile.y)
+            && (player.y < tile.y + tile.h)
     then
         True
 
     else
         False
-
-
-standingOn : Float -> Float -> Float -> Float -> Float -> Float -> Float -> Float -> Bool
-standingOn x1 y1 w1 h1 x2 y2 w2 h2 =
-    if
-        (x1 + w1 > x2)
-            && (x1 < x2 + w2)
-            && (y1 + h1 >= y2)
-            && (y1 < y2 + h2)
-    then
-        True
-
-    else
-        False
-
-
-moveX : Player -> MapTile -> ( Player, MapTile )
-moveX pl tile =
-    let
-        { width, height } =
-            Texture.dimensions tile.sprite
-    in
-    if collides pl.x pl.y pl.w pl.h tile.x tile.y width height then
-        if pl.vx < 0 then
-            if tile.x + width < pl.x + pl.w then
-                ( { pl | vx = 0, x = tile.x + width }, tile )
-
-            else
-                ( pl, tile )
-
-        else if tile.x > pl.x then
-            ( { pl | vx = 0, x = tile.x - pl.w }, tile )
-
-        else
-            ( pl, tile )
-
-    else
-        ( pl, tile )
-
-
-moveY : Player -> MapTile -> ( Player, MapTile )
-moveY pl tile =
-    let
-        { width, height } =
-            Texture.dimensions tile.sprite
-    in
-    if collides pl.x pl.y pl.w pl.h tile.x tile.y width height then
-        if pl.vy < 0 && tile.y < pl.y then
-            ( { pl | vy = 0, y = tile.y + height }, tile )
-
-        else if tile.y + height > pl.y + pl.h then
-            ( { pl | grounded = True, vy = 0, y = tile.y - pl.h }, tile )
-
-        else
-            ( pl, tile )
-
-    else if standingOn pl.x pl.y pl.w pl.h tile.x tile.y width height then
-        ( { pl | grounded = True }, tile )
-
-    else
-        ( pl, tile )
 
 
 physics : Float -> GameState -> GameState
 physics delta ({ player } as state) =
     let
         friction =
-            0.95
+            0.93
                 * (if player.grounded then
                     0.95
 
@@ -512,7 +521,7 @@ physics delta ({ player } as state) =
                     }
             }
     in
-    collisions state newState
+    collisions newState
 
 
 updateKeys : String -> Bool -> Model -> Model
