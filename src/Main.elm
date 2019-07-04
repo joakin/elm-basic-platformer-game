@@ -263,6 +263,7 @@ update msg model =
                                         , { kind = Platform, x = 50 + 1 * width, y = 450, w = width, h = height, sprite = tiles.soilGrass }
                                         , { kind = Platform, x = 50 + 2 * width, y = 480, w = width, h = height, sprite = tiles.soilGrass }
                                         , { kind = Platform, x = 50 + 3 * width, y = 550, w = width, h = height, sprite = tiles.soilGrass }
+                                        , { kind = Platform, x = 50 + 3 * width, y = 300, w = width, h = height, sprite = tiles.soilGrass }
                                         , { kind = Platform, x = 50 + 4 * width, y = 650, w = width, h = height, sprite = tiles.soilGrass }
                                         , { kind = Platform, x = 50 + 5 * width, y = 600, w = width, h = height, sprite = tiles.soilGrass }
                                         , { kind = Platform, x = 50 + 6 * width, y = 550, w = width, h = height, sprite = tiles.soilGrass }
@@ -333,10 +334,10 @@ tick width height count delta input state =
 
             jumpAcc =
                 if player.grounded && player.vy >= 0 then
-                    20
+                    25
 
                 else if player.vy > 0 then
-                    gravity delta / 2
+                    gravity delta / 3
 
                 else
                     gravity delta * (7 / 9)
@@ -500,13 +501,11 @@ physics : Float -> GameState -> GameState
 physics delta ({ player } as state) =
     let
         friction =
-            0.93
-                * (if player.grounded then
-                    0.95
+            if player.grounded then
+                0.8835
 
-                   else
-                    1
-                  )
+            else
+                0.9
 
         newState =
             { state
