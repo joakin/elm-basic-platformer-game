@@ -1,14 +1,20 @@
+html {
+  margin: 0;
+}
 body {
   background-color: rgba(0, 0, 0, 0.03);
   font-family: "Source Code Pro", "Roboto Mono", "Consolas", "Courier Prime",
     "Courier", monospace;
 
   margin: 0;
+  padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 100%;
+  width: 100%;
   flex-direction: column;
+  overflow: hidden;
 }
 
 a,

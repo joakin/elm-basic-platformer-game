@@ -4,6 +4,7 @@ MINIFY:=0
 ELM_MAKE_FLAGS:=
 
 SOURCES:=$(wildcard src/*.elm) $(wildcard src/*/*.elm) $(wildcard src/*/*/*.elm)
+MAIN:=src/Main.elm
 OUTPUT:=public/elm.js
 
 ELM_CANVAS_COPY=public/elm-canvas.js
@@ -11,7 +12,7 @@ ELM_CANVAS_COPY=public/elm-canvas.js
 .PHONY=all
 all: $(OUTPUT) $(ELM_CANVAS_COPY)
 
-$(OUTPUT): $(SOURCES)
+$(OUTPUT): $(MAIN) $(SOURCES)
 	@echo "Compiling $@ from $<"
 	elm make $< --output $@ $(ELM_MAKE_FLAGS)
 	@if [ "$(MINIFY)" = "1" ]; then \

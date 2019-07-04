@@ -232,87 +232,6 @@ var _JsArray_appendN = F3(function(n, dest, source)
 
 
 
-var _List_Nil_UNUSED = { $: 0 };
-var _List_Nil = { $: '[]' };
-
-function _List_Cons_UNUSED(hd, tl) { return { $: 1, a: hd, b: tl }; }
-function _List_Cons(hd, tl) { return { $: '::', a: hd, b: tl }; }
-
-
-var _List_cons = F2(_List_Cons);
-
-function _List_fromArray(arr)
-{
-	var out = _List_Nil;
-	for (var i = arr.length; i--; )
-	{
-		out = _List_Cons(arr[i], out);
-	}
-	return out;
-}
-
-function _List_toArray(xs)
-{
-	for (var out = []; xs.b; xs = xs.b) // WHILE_CONS
-	{
-		out.push(xs.a);
-	}
-	return out;
-}
-
-var _List_map2 = F3(function(f, xs, ys)
-{
-	for (var arr = []; xs.b && ys.b; xs = xs.b, ys = ys.b) // WHILE_CONSES
-	{
-		arr.push(A2(f, xs.a, ys.a));
-	}
-	return _List_fromArray(arr);
-});
-
-var _List_map3 = F4(function(f, xs, ys, zs)
-{
-	for (var arr = []; xs.b && ys.b && zs.b; xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
-	{
-		arr.push(A3(f, xs.a, ys.a, zs.a));
-	}
-	return _List_fromArray(arr);
-});
-
-var _List_map4 = F5(function(f, ws, xs, ys, zs)
-{
-	for (var arr = []; ws.b && xs.b && ys.b && zs.b; ws = ws.b, xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
-	{
-		arr.push(A4(f, ws.a, xs.a, ys.a, zs.a));
-	}
-	return _List_fromArray(arr);
-});
-
-var _List_map5 = F6(function(f, vs, ws, xs, ys, zs)
-{
-	for (var arr = []; vs.b && ws.b && xs.b && ys.b && zs.b; vs = vs.b, ws = ws.b, xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
-	{
-		arr.push(A5(f, vs.a, ws.a, xs.a, ys.a, zs.a));
-	}
-	return _List_fromArray(arr);
-});
-
-var _List_sortBy = F2(function(f, xs)
-{
-	return _List_fromArray(_List_toArray(xs).sort(function(a, b) {
-		return _Utils_cmp(f(a), f(b));
-	}));
-});
-
-var _List_sortWith = F2(function(f, xs)
-{
-	return _List_fromArray(_List_toArray(xs).sort(function(a, b) {
-		var ord = A2(f, a, b);
-		return ord === elm$core$Basics$EQ ? 0 : ord === elm$core$Basics$LT ? -1 : 1;
-	}));
-});
-
-
-
 // LOG
 
 var _Debug_log_UNUSED = F2(function(tag, value)
@@ -790,6 +709,87 @@ function _Utils_ap(xs, ys)
 	}
 	return root;
 }
+
+
+
+var _List_Nil_UNUSED = { $: 0 };
+var _List_Nil = { $: '[]' };
+
+function _List_Cons_UNUSED(hd, tl) { return { $: 1, a: hd, b: tl }; }
+function _List_Cons(hd, tl) { return { $: '::', a: hd, b: tl }; }
+
+
+var _List_cons = F2(_List_Cons);
+
+function _List_fromArray(arr)
+{
+	var out = _List_Nil;
+	for (var i = arr.length; i--; )
+	{
+		out = _List_Cons(arr[i], out);
+	}
+	return out;
+}
+
+function _List_toArray(xs)
+{
+	for (var out = []; xs.b; xs = xs.b) // WHILE_CONS
+	{
+		out.push(xs.a);
+	}
+	return out;
+}
+
+var _List_map2 = F3(function(f, xs, ys)
+{
+	for (var arr = []; xs.b && ys.b; xs = xs.b, ys = ys.b) // WHILE_CONSES
+	{
+		arr.push(A2(f, xs.a, ys.a));
+	}
+	return _List_fromArray(arr);
+});
+
+var _List_map3 = F4(function(f, xs, ys, zs)
+{
+	for (var arr = []; xs.b && ys.b && zs.b; xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
+	{
+		arr.push(A3(f, xs.a, ys.a, zs.a));
+	}
+	return _List_fromArray(arr);
+});
+
+var _List_map4 = F5(function(f, ws, xs, ys, zs)
+{
+	for (var arr = []; ws.b && xs.b && ys.b && zs.b; ws = ws.b, xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
+	{
+		arr.push(A4(f, ws.a, xs.a, ys.a, zs.a));
+	}
+	return _List_fromArray(arr);
+});
+
+var _List_map5 = F6(function(f, vs, ws, xs, ys, zs)
+{
+	for (var arr = []; vs.b && ws.b && xs.b && ys.b && zs.b; vs = vs.b, ws = ws.b, xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
+	{
+		arr.push(A5(f, vs.a, ws.a, xs.a, ys.a, zs.a));
+	}
+	return _List_fromArray(arr);
+});
+
+var _List_sortBy = F2(function(f, xs)
+{
+	return _List_fromArray(_List_toArray(xs).sort(function(a, b) {
+		return _Utils_cmp(f(a), f(b));
+	}));
+});
+
+var _List_sortWith = F2(function(f, xs)
+{
+	return _List_fromArray(_List_toArray(xs).sort(function(a, b) {
+		var ord = A2(f, a, b);
+		return ord === elm$core$Basics$EQ ? 0 : ord === elm$core$Basics$LT ? -1 : 1;
+	}));
+});
 
 
 
@@ -4310,60 +4310,29 @@ function _Browser_load(url)
 		}
 	}));
 }
-var author$project$Main$Frame = function (a) {
-	return {$: 'Frame', a: a};
-};
-var author$project$Main$KeyDown = function (a) {
-	return {$: 'KeyDown', a: a};
-};
-var author$project$Main$KeyUp = function (a) {
-	return {$: 'KeyUp', a: a};
-};
-var author$project$Main$Resized = F2(
-	function (a, b) {
-		return {$: 'Resized', a: a, b: b};
-	});
 var author$project$Main$GetViewport = function (a) {
 	return {$: 'GetViewport', a: a};
 };
-var author$project$Main$LoadingAssets = {$: 'LoadingAssets'};
-var elm$browser$Browser$External = function (a) {
-	return {$: 'External', a: a};
-};
-var elm$browser$Browser$Internal = function (a) {
-	return {$: 'Internal', a: a};
-};
-var elm$browser$Browser$Dom$NotFound = function (a) {
-	return {$: 'NotFound', a: a};
-};
-var elm$core$Basics$never = function (_n0) {
-	never:
-	while (true) {
-		var nvr = _n0.a;
-		var $temp$_n0 = nvr;
-		_n0 = $temp$_n0;
-		continue never;
-	}
-};
-var elm$core$Maybe$Just = function (a) {
-	return {$: 'Just', a: a};
-};
-var elm$core$Maybe$Nothing = {$: 'Nothing'};
-var elm$core$Basics$False = {$: 'False'};
-var elm$core$Basics$True = {$: 'True'};
-var elm$core$Result$isOk = function (result) {
-	if (result.$ === 'Ok') {
-		return true;
-	} else {
-		return false;
-	}
-};
-var elm$core$Basics$identity = function (x) {
-	return x;
-};
-var elm$core$Task$Perform = function (a) {
-	return {$: 'Perform', a: a};
-};
+var author$project$Main$LoadingAssets = F2(
+	function (a, b) {
+		return {$: 'LoadingAssets', a: a, b: b};
+	});
+var author$project$Canvas$Internal$Texture$TSImageUrl = F2(
+	function (a, b) {
+		return {$: 'TSImageUrl', a: a, b: b};
+	});
+var author$project$Canvas$Texture$loadFromImageUrl = F2(
+	function (url, onLoad) {
+		return A2(author$project$Canvas$Internal$Texture$TSImageUrl, url, onLoad);
+	});
+var author$project$Main$AssetLoaded = F2(
+	function (a, b) {
+		return {$: 'AssetLoaded', a: a, b: b};
+	});
+var author$project$Main$Char = {$: 'Char'};
+var author$project$Main$Tile = {$: 'Tile'};
+var elm$core$Basics$EQ = {$: 'EQ'};
+var elm$core$Basics$LT = {$: 'LT'};
 var elm$core$Elm$JsArray$foldr = _JsArray_foldr;
 var elm$core$Array$foldr = F3(
 	function (func, baseCase, _n0) {
@@ -4385,8 +4354,6 @@ var elm$core$Array$foldr = F3(
 			A3(elm$core$Elm$JsArray$foldr, func, baseCase, tail),
 			tree);
 	});
-var elm$core$Basics$EQ = {$: 'EQ'};
-var elm$core$Basics$LT = {$: 'LT'};
 var elm$core$List$cons = _List_cons;
 var elm$core$Array$toList = function (array) {
 	return A3(elm$core$Array$foldr, elm$core$List$cons, _List_Nil, array);
@@ -4443,6 +4410,54 @@ var elm$core$Dict$keys = function (dict) {
 var elm$core$Set$toList = function (_n0) {
 	var dict = _n0.a;
 	return elm$core$Dict$keys(dict);
+};
+var author$project$Main$textures = _List_fromArray(
+	[
+		A2(
+		author$project$Canvas$Texture$loadFromImageUrl,
+		'assets/kenney_simplifiedplatformer/Vector/platformPack_character_vector.svg',
+		author$project$Main$AssetLoaded(author$project$Main$Char)),
+		A2(
+		author$project$Canvas$Texture$loadFromImageUrl,
+		'assets/kenney_simplifiedplatformer/Vector/platformPack_tile_vector.svg',
+		author$project$Main$AssetLoaded(author$project$Main$Tile))
+	]);
+var elm$browser$Browser$External = function (a) {
+	return {$: 'External', a: a};
+};
+var elm$browser$Browser$Internal = function (a) {
+	return {$: 'Internal', a: a};
+};
+var elm$browser$Browser$Dom$NotFound = function (a) {
+	return {$: 'NotFound', a: a};
+};
+var elm$core$Basics$never = function (_n0) {
+	never:
+	while (true) {
+		var nvr = _n0.a;
+		var $temp$_n0 = nvr;
+		_n0 = $temp$_n0;
+		continue never;
+	}
+};
+var elm$core$Maybe$Just = function (a) {
+	return {$: 'Just', a: a};
+};
+var elm$core$Maybe$Nothing = {$: 'Nothing'};
+var elm$core$Basics$False = {$: 'False'};
+var elm$core$Basics$True = {$: 'True'};
+var elm$core$Result$isOk = function (result) {
+	if (result.$ === 'Ok') {
+		return true;
+	} else {
+		return false;
+	}
+};
+var elm$core$Basics$identity = function (x) {
+	return x;
+};
+var elm$core$Task$Perform = function (a) {
+	return {$: 'Perform', a: a};
 };
 var elm$core$Task$succeed = _Scheduler_succeed;
 var elm$core$Task$init = elm$core$Task$succeed(_Utils_Tuple0);
@@ -5116,26 +5131,626 @@ var elm$url$Url$fromString = function (str) {
 		A2(elm$core$String$dropLeft, 8, str)) : elm$core$Maybe$Nothing);
 };
 var elm$browser$Browser$Dom$getViewport = _Browser_withWindow(_Browser_getViewport);
+var elm$browser$Browser$Events$Visible = {$: 'Visible'};
 var author$project$Main$init = function (random) {
 	return _Utils_Tuple2(
 		{
 			count: 0,
-			game: author$project$Main$LoadingAssets,
+			game: A2(
+				author$project$Main$LoadingAssets,
+				elm$core$List$length(author$project$Main$textures),
+				{_char: elm$core$Maybe$Nothing, tile: elm$core$Maybe$Nothing}),
 			height: 400,
 			input: {left: false, right: false, up: false},
+			pageVisibility: elm$browser$Browser$Events$Visible,
 			width: 400
 		},
 		A2(elm$core$Task$perform, author$project$Main$GetViewport, elm$browser$Browser$Dom$getViewport));
 };
+var author$project$Main$Frame = function (a) {
+	return {$: 'Frame', a: a};
+};
+var author$project$Main$KeyDown = function (a) {
+	return {$: 'KeyDown', a: a};
+};
+var author$project$Main$KeyUp = function (a) {
+	return {$: 'KeyUp', a: a};
+};
+var author$project$Main$PageVisibilityChanged = function (a) {
+	return {$: 'PageVisibilityChanged', a: a};
+};
+var author$project$Main$Resized = F2(
+	function (a, b) {
+		return {$: 'Resized', a: a, b: b};
+	});
 var elm$json$Json$Decode$field = _Json_decodeField;
 var elm$json$Json$Decode$string = _Json_decodeString;
 var author$project$Main$keyDecoder = A2(elm$json$Json$Decode$field, 'key', elm$json$Json$Decode$string);
-var author$project$Main$GameStarted = function (a) {
-	return {$: 'GameStarted', a: a};
+var elm$browser$Browser$AnimationManager$Delta = function (a) {
+	return {$: 'Delta', a: a};
 };
-var author$project$Main$Idle = {$: 'Idle'};
-var author$project$Main$LoadingFailed = {$: 'LoadingFailed'};
-var author$project$Main$R = {$: 'R'};
+var elm$browser$Browser$AnimationManager$State = F3(
+	function (subs, request, oldTime) {
+		return {oldTime: oldTime, request: request, subs: subs};
+	});
+var elm$browser$Browser$AnimationManager$init = elm$core$Task$succeed(
+	A3(elm$browser$Browser$AnimationManager$State, _List_Nil, elm$core$Maybe$Nothing, 0));
+var elm$browser$Browser$AnimationManager$now = _Browser_now(_Utils_Tuple0);
+var elm$browser$Browser$AnimationManager$rAF = _Browser_rAF(_Utils_Tuple0);
+var elm$core$Platform$sendToSelf = _Platform_sendToSelf;
+var elm$core$Process$kill = _Scheduler_kill;
+var elm$core$Process$spawn = _Scheduler_spawn;
+var elm$browser$Browser$AnimationManager$onEffects = F3(
+	function (router, subs, _n0) {
+		var request = _n0.request;
+		var oldTime = _n0.oldTime;
+		var _n1 = _Utils_Tuple2(request, subs);
+		if (_n1.a.$ === 'Nothing') {
+			if (!_n1.b.b) {
+				var _n2 = _n1.a;
+				return elm$browser$Browser$AnimationManager$init;
+			} else {
+				var _n4 = _n1.a;
+				return A2(
+					elm$core$Task$andThen,
+					function (pid) {
+						return A2(
+							elm$core$Task$andThen,
+							function (time) {
+								return elm$core$Task$succeed(
+									A3(
+										elm$browser$Browser$AnimationManager$State,
+										subs,
+										elm$core$Maybe$Just(pid),
+										time));
+							},
+							elm$browser$Browser$AnimationManager$now);
+					},
+					elm$core$Process$spawn(
+						A2(
+							elm$core$Task$andThen,
+							elm$core$Platform$sendToSelf(router),
+							elm$browser$Browser$AnimationManager$rAF)));
+			}
+		} else {
+			if (!_n1.b.b) {
+				var pid = _n1.a.a;
+				return A2(
+					elm$core$Task$andThen,
+					function (_n3) {
+						return elm$browser$Browser$AnimationManager$init;
+					},
+					elm$core$Process$kill(pid));
+			} else {
+				return elm$core$Task$succeed(
+					A3(elm$browser$Browser$AnimationManager$State, subs, request, oldTime));
+			}
+		}
+	});
+var elm$time$Time$Posix = function (a) {
+	return {$: 'Posix', a: a};
+};
+var elm$time$Time$millisToPosix = elm$time$Time$Posix;
+var elm$browser$Browser$AnimationManager$onSelfMsg = F3(
+	function (router, newTime, _n0) {
+		var subs = _n0.subs;
+		var oldTime = _n0.oldTime;
+		var send = function (sub) {
+			if (sub.$ === 'Time') {
+				var tagger = sub.a;
+				return A2(
+					elm$core$Platform$sendToApp,
+					router,
+					tagger(
+						elm$time$Time$millisToPosix(newTime)));
+			} else {
+				var tagger = sub.a;
+				return A2(
+					elm$core$Platform$sendToApp,
+					router,
+					tagger(newTime - oldTime));
+			}
+		};
+		return A2(
+			elm$core$Task$andThen,
+			function (pid) {
+				return A2(
+					elm$core$Task$andThen,
+					function (_n1) {
+						return elm$core$Task$succeed(
+							A3(
+								elm$browser$Browser$AnimationManager$State,
+								subs,
+								elm$core$Maybe$Just(pid),
+								newTime));
+					},
+					elm$core$Task$sequence(
+						A2(elm$core$List$map, send, subs)));
+			},
+			elm$core$Process$spawn(
+				A2(
+					elm$core$Task$andThen,
+					elm$core$Platform$sendToSelf(router),
+					elm$browser$Browser$AnimationManager$rAF)));
+	});
+var elm$browser$Browser$AnimationManager$Time = function (a) {
+	return {$: 'Time', a: a};
+};
+var elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
+var elm$browser$Browser$AnimationManager$subMap = F2(
+	function (func, sub) {
+		if (sub.$ === 'Time') {
+			var tagger = sub.a;
+			return elm$browser$Browser$AnimationManager$Time(
+				A2(elm$core$Basics$composeL, func, tagger));
+		} else {
+			var tagger = sub.a;
+			return elm$browser$Browser$AnimationManager$Delta(
+				A2(elm$core$Basics$composeL, func, tagger));
+		}
+	});
+_Platform_effectManagers['Browser.AnimationManager'] = _Platform_createManager(elm$browser$Browser$AnimationManager$init, elm$browser$Browser$AnimationManager$onEffects, elm$browser$Browser$AnimationManager$onSelfMsg, 0, elm$browser$Browser$AnimationManager$subMap);
+var elm$browser$Browser$AnimationManager$subscription = _Platform_leaf('Browser.AnimationManager');
+var elm$browser$Browser$AnimationManager$onAnimationFrameDelta = function (tagger) {
+	return elm$browser$Browser$AnimationManager$subscription(
+		elm$browser$Browser$AnimationManager$Delta(tagger));
+};
+var elm$browser$Browser$Events$onAnimationFrameDelta = elm$browser$Browser$AnimationManager$onAnimationFrameDelta;
+var elm$browser$Browser$Events$Document = {$: 'Document'};
+var elm$browser$Browser$Events$MySub = F3(
+	function (a, b, c) {
+		return {$: 'MySub', a: a, b: b, c: c};
+	});
+var elm$browser$Browser$Events$State = F2(
+	function (subs, pids) {
+		return {pids: pids, subs: subs};
+	});
+var elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
+var elm$core$Dict$empty = elm$core$Dict$RBEmpty_elm_builtin;
+var elm$browser$Browser$Events$init = elm$core$Task$succeed(
+	A2(elm$browser$Browser$Events$State, _List_Nil, elm$core$Dict$empty));
+var elm$browser$Browser$Events$nodeToKey = function (node) {
+	if (node.$ === 'Document') {
+		return 'd_';
+	} else {
+		return 'w_';
+	}
+};
+var elm$browser$Browser$Events$addKey = function (sub) {
+	var node = sub.a;
+	var name = sub.b;
+	return _Utils_Tuple2(
+		_Utils_ap(
+			elm$browser$Browser$Events$nodeToKey(node),
+			name),
+		sub);
+};
+var elm$browser$Browser$Events$Event = F2(
+	function (key, event) {
+		return {event: event, key: key};
+	});
+var elm$browser$Browser$Events$spawn = F3(
+	function (router, key, _n0) {
+		var node = _n0.a;
+		var name = _n0.b;
+		var actualNode = function () {
+			if (node.$ === 'Document') {
+				return _Browser_doc;
+			} else {
+				return _Browser_window;
+			}
+		}();
+		return A2(
+			elm$core$Task$map,
+			function (value) {
+				return _Utils_Tuple2(key, value);
+			},
+			A3(
+				_Browser_on,
+				actualNode,
+				name,
+				function (event) {
+					return A2(
+						elm$core$Platform$sendToSelf,
+						router,
+						A2(elm$browser$Browser$Events$Event, key, event));
+				}));
+	});
+var elm$core$Dict$Black = {$: 'Black'};
+var elm$core$Dict$RBNode_elm_builtin = F5(
+	function (a, b, c, d, e) {
+		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
+	});
+var elm$core$Basics$compare = _Utils_compare;
+var elm$core$Dict$Red = {$: 'Red'};
+var elm$core$Dict$balance = F5(
+	function (color, key, value, left, right) {
+		if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Red')) {
+			var _n1 = right.a;
+			var rK = right.b;
+			var rV = right.c;
+			var rLeft = right.d;
+			var rRight = right.e;
+			if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
+				var _n3 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var lLeft = left.d;
+				var lRight = left.e;
+				return A5(
+					elm$core$Dict$RBNode_elm_builtin,
+					elm$core$Dict$Red,
+					key,
+					value,
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, lK, lV, lLeft, lRight),
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					elm$core$Dict$RBNode_elm_builtin,
+					color,
+					rK,
+					rV,
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, key, value, left, rLeft),
+					rRight);
+			}
+		} else {
+			if ((((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) && (left.d.$ === 'RBNode_elm_builtin')) && (left.d.a.$ === 'Red')) {
+				var _n5 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var _n6 = left.d;
+				var _n7 = _n6.a;
+				var llK = _n6.b;
+				var llV = _n6.c;
+				var llLeft = _n6.d;
+				var llRight = _n6.e;
+				var lRight = left.e;
+				return A5(
+					elm$core$Dict$RBNode_elm_builtin,
+					elm$core$Dict$Red,
+					lK,
+					lV,
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, llK, llV, llLeft, llRight),
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, key, value, lRight, right));
+			} else {
+				return A5(elm$core$Dict$RBNode_elm_builtin, color, key, value, left, right);
+			}
+		}
+	});
+var elm$core$Dict$insertHelp = F3(
+	function (key, value, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, key, value, elm$core$Dict$RBEmpty_elm_builtin, elm$core$Dict$RBEmpty_elm_builtin);
+		} else {
+			var nColor = dict.a;
+			var nKey = dict.b;
+			var nValue = dict.c;
+			var nLeft = dict.d;
+			var nRight = dict.e;
+			var _n1 = A2(elm$core$Basics$compare, key, nKey);
+			switch (_n1.$) {
+				case 'LT':
+					return A5(
+						elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						A3(elm$core$Dict$insertHelp, key, value, nLeft),
+						nRight);
+				case 'EQ':
+					return A5(elm$core$Dict$RBNode_elm_builtin, nColor, nKey, value, nLeft, nRight);
+				default:
+					return A5(
+						elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						nLeft,
+						A3(elm$core$Dict$insertHelp, key, value, nRight));
+			}
+		}
+	});
+var elm$core$Dict$insert = F3(
+	function (key, value, dict) {
+		var _n0 = A3(elm$core$Dict$insertHelp, key, value, dict);
+		if ((_n0.$ === 'RBNode_elm_builtin') && (_n0.a.$ === 'Red')) {
+			var _n1 = _n0.a;
+			var k = _n0.b;
+			var v = _n0.c;
+			var l = _n0.d;
+			var r = _n0.e;
+			return A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, k, v, l, r);
+		} else {
+			var x = _n0;
+			return x;
+		}
+	});
+var elm$core$Dict$fromList = function (assocs) {
+	return A3(
+		elm$core$List$foldl,
+		F2(
+			function (_n0, dict) {
+				var key = _n0.a;
+				var value = _n0.b;
+				return A3(elm$core$Dict$insert, key, value, dict);
+			}),
+		elm$core$Dict$empty,
+		assocs);
+};
+var elm$core$Dict$foldl = F3(
+	function (func, acc, dict) {
+		foldl:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return acc;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var $temp$func = func,
+					$temp$acc = A3(
+					func,
+					key,
+					value,
+					A3(elm$core$Dict$foldl, func, acc, left)),
+					$temp$dict = right;
+				func = $temp$func;
+				acc = $temp$acc;
+				dict = $temp$dict;
+				continue foldl;
+			}
+		}
+	});
+var elm$core$Dict$merge = F6(
+	function (leftStep, bothStep, rightStep, leftDict, rightDict, initialResult) {
+		var stepState = F3(
+			function (rKey, rValue, _n0) {
+				stepState:
+				while (true) {
+					var list = _n0.a;
+					var result = _n0.b;
+					if (!list.b) {
+						return _Utils_Tuple2(
+							list,
+							A3(rightStep, rKey, rValue, result));
+					} else {
+						var _n2 = list.a;
+						var lKey = _n2.a;
+						var lValue = _n2.b;
+						var rest = list.b;
+						if (_Utils_cmp(lKey, rKey) < 0) {
+							var $temp$rKey = rKey,
+								$temp$rValue = rValue,
+								$temp$_n0 = _Utils_Tuple2(
+								rest,
+								A3(leftStep, lKey, lValue, result));
+							rKey = $temp$rKey;
+							rValue = $temp$rValue;
+							_n0 = $temp$_n0;
+							continue stepState;
+						} else {
+							if (_Utils_cmp(lKey, rKey) > 0) {
+								return _Utils_Tuple2(
+									list,
+									A3(rightStep, rKey, rValue, result));
+							} else {
+								return _Utils_Tuple2(
+									rest,
+									A4(bothStep, lKey, lValue, rValue, result));
+							}
+						}
+					}
+				}
+			});
+		var _n3 = A3(
+			elm$core$Dict$foldl,
+			stepState,
+			_Utils_Tuple2(
+				elm$core$Dict$toList(leftDict),
+				initialResult),
+			rightDict);
+		var leftovers = _n3.a;
+		var intermediateResult = _n3.b;
+		return A3(
+			elm$core$List$foldl,
+			F2(
+				function (_n4, result) {
+					var k = _n4.a;
+					var v = _n4.b;
+					return A3(leftStep, k, v, result);
+				}),
+			intermediateResult,
+			leftovers);
+	});
+var elm$core$Dict$union = F2(
+	function (t1, t2) {
+		return A3(elm$core$Dict$foldl, elm$core$Dict$insert, t2, t1);
+	});
+var elm$browser$Browser$Events$onEffects = F3(
+	function (router, subs, state) {
+		var stepRight = F3(
+			function (key, sub, _n6) {
+				var deads = _n6.a;
+				var lives = _n6.b;
+				var news = _n6.c;
+				return _Utils_Tuple3(
+					deads,
+					lives,
+					A2(
+						elm$core$List$cons,
+						A3(elm$browser$Browser$Events$spawn, router, key, sub),
+						news));
+			});
+		var stepLeft = F3(
+			function (_n4, pid, _n5) {
+				var deads = _n5.a;
+				var lives = _n5.b;
+				var news = _n5.c;
+				return _Utils_Tuple3(
+					A2(elm$core$List$cons, pid, deads),
+					lives,
+					news);
+			});
+		var stepBoth = F4(
+			function (key, pid, _n2, _n3) {
+				var deads = _n3.a;
+				var lives = _n3.b;
+				var news = _n3.c;
+				return _Utils_Tuple3(
+					deads,
+					A3(elm$core$Dict$insert, key, pid, lives),
+					news);
+			});
+		var newSubs = A2(elm$core$List$map, elm$browser$Browser$Events$addKey, subs);
+		var _n0 = A6(
+			elm$core$Dict$merge,
+			stepLeft,
+			stepBoth,
+			stepRight,
+			state.pids,
+			elm$core$Dict$fromList(newSubs),
+			_Utils_Tuple3(_List_Nil, elm$core$Dict$empty, _List_Nil));
+		var deadPids = _n0.a;
+		var livePids = _n0.b;
+		var makeNewPids = _n0.c;
+		return A2(
+			elm$core$Task$andThen,
+			function (pids) {
+				return elm$core$Task$succeed(
+					A2(
+						elm$browser$Browser$Events$State,
+						newSubs,
+						A2(
+							elm$core$Dict$union,
+							livePids,
+							elm$core$Dict$fromList(pids))));
+			},
+			A2(
+				elm$core$Task$andThen,
+				function (_n1) {
+					return elm$core$Task$sequence(makeNewPids);
+				},
+				elm$core$Task$sequence(
+					A2(elm$core$List$map, elm$core$Process$kill, deadPids))));
+	});
+var elm$core$List$maybeCons = F3(
+	function (f, mx, xs) {
+		var _n0 = f(mx);
+		if (_n0.$ === 'Just') {
+			var x = _n0.a;
+			return A2(elm$core$List$cons, x, xs);
+		} else {
+			return xs;
+		}
+	});
+var elm$core$List$filterMap = F2(
+	function (f, xs) {
+		return A3(
+			elm$core$List$foldr,
+			elm$core$List$maybeCons(f),
+			_List_Nil,
+			xs);
+	});
+var elm$browser$Browser$Events$onSelfMsg = F3(
+	function (router, _n0, state) {
+		var key = _n0.key;
+		var event = _n0.event;
+		var toMessage = function (_n2) {
+			var subKey = _n2.a;
+			var _n3 = _n2.b;
+			var node = _n3.a;
+			var name = _n3.b;
+			var decoder = _n3.c;
+			return _Utils_eq(subKey, key) ? A2(_Browser_decodeEvent, decoder, event) : elm$core$Maybe$Nothing;
+		};
+		var messages = A2(elm$core$List$filterMap, toMessage, state.subs);
+		return A2(
+			elm$core$Task$andThen,
+			function (_n1) {
+				return elm$core$Task$succeed(state);
+			},
+			elm$core$Task$sequence(
+				A2(
+					elm$core$List$map,
+					elm$core$Platform$sendToApp(router),
+					messages)));
+	});
+var elm$browser$Browser$Events$subMap = F2(
+	function (func, _n0) {
+		var node = _n0.a;
+		var name = _n0.b;
+		var decoder = _n0.c;
+		return A3(
+			elm$browser$Browser$Events$MySub,
+			node,
+			name,
+			A2(elm$json$Json$Decode$map, func, decoder));
+	});
+_Platform_effectManagers['Browser.Events'] = _Platform_createManager(elm$browser$Browser$Events$init, elm$browser$Browser$Events$onEffects, elm$browser$Browser$Events$onSelfMsg, 0, elm$browser$Browser$Events$subMap);
+var elm$browser$Browser$Events$subscription = _Platform_leaf('Browser.Events');
+var elm$browser$Browser$Events$on = F3(
+	function (node, name, decoder) {
+		return elm$browser$Browser$Events$subscription(
+			A3(elm$browser$Browser$Events$MySub, node, name, decoder));
+	});
+var elm$browser$Browser$Events$onKeyDown = A2(elm$browser$Browser$Events$on, elm$browser$Browser$Events$Document, 'keydown');
+var elm$browser$Browser$Events$onKeyUp = A2(elm$browser$Browser$Events$on, elm$browser$Browser$Events$Document, 'keyup');
+var elm$browser$Browser$Events$Window = {$: 'Window'};
+var elm$json$Json$Decode$int = _Json_decodeInt;
+var elm$browser$Browser$Events$onResize = function (func) {
+	return A3(
+		elm$browser$Browser$Events$on,
+		elm$browser$Browser$Events$Window,
+		'resize',
+		A2(
+			elm$json$Json$Decode$field,
+			'target',
+			A3(
+				elm$json$Json$Decode$map2,
+				func,
+				A2(elm$json$Json$Decode$field, 'innerWidth', elm$json$Json$Decode$int),
+				A2(elm$json$Json$Decode$field, 'innerHeight', elm$json$Json$Decode$int))));
+};
+var elm$browser$Browser$Events$Hidden = {$: 'Hidden'};
+var elm$browser$Browser$Events$withHidden = F2(
+	function (func, isHidden) {
+		return func(
+			isHidden ? elm$browser$Browser$Events$Hidden : elm$browser$Browser$Events$Visible);
+	});
+var elm$json$Json$Decode$bool = _Json_decodeBool;
+var elm$browser$Browser$Events$onVisibilityChange = function (func) {
+	var info = _Browser_visibilityInfo(_Utils_Tuple0);
+	return A3(
+		elm$browser$Browser$Events$on,
+		elm$browser$Browser$Events$Document,
+		info.change,
+		A2(
+			elm$json$Json$Decode$map,
+			elm$browser$Browser$Events$withHidden(func),
+			A2(
+				elm$json$Json$Decode$field,
+				'target',
+				A2(elm$json$Json$Decode$field, info.hidden, elm$json$Json$Decode$bool))));
+};
+var elm$core$Platform$Sub$batch = _Platform_batch;
+var author$project$Main$subscriptions = function (model) {
+	return elm$core$Platform$Sub$batch(
+		_List_fromArray(
+			[
+				elm$browser$Browser$Events$onResize(author$project$Main$Resized),
+				elm$browser$Browser$Events$onVisibilityChange(author$project$Main$PageVisibilityChanged),
+				elm$browser$Browser$Events$onAnimationFrameDelta(author$project$Main$Frame),
+				elm$browser$Browser$Events$onKeyDown(
+				A2(elm$json$Json$Decode$map, author$project$Main$KeyDown, author$project$Main$keyDecoder)),
+				elm$browser$Browser$Events$onKeyUp(
+				A2(elm$json$Json$Decode$map, author$project$Main$KeyUp, author$project$Main$keyDecoder))
+			]));
+};
 var author$project$Canvas$Texture$dimensions = function (texture) {
 	if (texture.$ === 'TImage') {
 		var image = texture.a;
@@ -5145,43 +5760,185 @@ var author$project$Canvas$Texture$dimensions = function (texture) {
 		return {height: data.height, width: data.width};
 	}
 };
+var author$project$Main$GameStarted = function (a) {
+	return {$: 'GameStarted', a: a};
+};
+var author$project$Main$Idle = {$: 'Idle'};
+var author$project$Main$LoadingFailed = {$: 'LoadingFailed'};
+var author$project$Main$Platform = {$: 'Platform'};
+var author$project$Main$R = {$: 'R'};
+var author$project$Main$Dead = function (a) {
+	return {$: 'Dead', a: a};
+};
 var author$project$Main$Jumping = {$: 'Jumping'};
 var author$project$Main$L = {$: 'L'};
 var author$project$Main$Walking = {$: 'Walking'};
+var author$project$Main$gravity = function (delta) {
+	return (50 * delta) / 1000;
+};
+var author$project$Main$collisionStep = F3(
+	function (resolve, tile, _n0) {
+		var player = _n0.a;
+		var map = _n0.b;
+		var _n1 = tile.kind;
+		var _n2 = A2(resolve, player, tile);
+		var newPlayer = _n2.a;
+		var newTile = _n2.b;
+		var _n3 = author$project$Canvas$Texture$dimensions(tile.sprite);
+		var width = _n3.width;
+		var height = _n3.height;
+		return _Utils_Tuple2(
+			newPlayer,
+			A2(elm$core$List$cons, newTile, map));
+	});
+var author$project$Main$collides = F8(
+	function (x1, y1, w1, h1, x2, y2, w2, h2) {
+		return ((_Utils_cmp(x1 + w1, x2) > 0) && ((_Utils_cmp(x1, x2 + w2) < 0) && ((_Utils_cmp(y1 + h1, y2) > 0) && (_Utils_cmp(y1, y2 + h2) < 0)))) ? true : false;
+	});
+var author$project$Main$moveX = F2(
+	function (pl, tile) {
+		var _n0 = author$project$Canvas$Texture$dimensions(tile.sprite);
+		var width = _n0.width;
+		var height = _n0.height;
+		return A8(author$project$Main$collides, pl.x, pl.y, pl.w, pl.h, tile.x, tile.y, width, height) ? ((pl.vx < 0) ? ((_Utils_cmp(tile.x + width, pl.x + pl.w) < 0) ? _Utils_Tuple2(
+			_Utils_update(
+				pl,
+				{vx: 0, x: tile.x + width}),
+			tile) : _Utils_Tuple2(pl, tile)) : ((_Utils_cmp(tile.x, pl.x) > 0) ? _Utils_Tuple2(
+			_Utils_update(
+				pl,
+				{vx: 0, x: tile.x - pl.w}),
+			tile) : _Utils_Tuple2(pl, tile))) : _Utils_Tuple2(pl, tile);
+	});
+var elm$core$Basics$ge = _Utils_ge;
+var author$project$Main$standingOn = F8(
+	function (x1, y1, w1, h1, x2, y2, w2, h2) {
+		return ((_Utils_cmp(x1 + w1, x2) > 0) && ((_Utils_cmp(x1, x2 + w2) < 0) && ((_Utils_cmp(y1 + h1, y2) > -1) && (_Utils_cmp(y1, y2 + h2) < 0)))) ? true : false;
+	});
+var author$project$Main$moveY = F2(
+	function (pl, tile) {
+		var _n0 = author$project$Canvas$Texture$dimensions(tile.sprite);
+		var width = _n0.width;
+		var height = _n0.height;
+		return A8(author$project$Main$collides, pl.x, pl.y, pl.w, pl.h, tile.x, tile.y, width, height) ? (((pl.vy < 0) && (_Utils_cmp(tile.y, pl.y) < 0)) ? _Utils_Tuple2(
+			_Utils_update(
+				pl,
+				{vy: 0, y: tile.y + height}),
+			tile) : ((_Utils_cmp(tile.y + height, pl.y + pl.h) > 0) ? _Utils_Tuple2(
+			_Utils_update(
+				pl,
+				{grounded: true, vy: 0, y: tile.y - pl.h}),
+			tile) : _Utils_Tuple2(pl, tile))) : (A8(author$project$Main$standingOn, pl.x, pl.y, pl.w, pl.h, tile.x, tile.y, width, height) ? _Utils_Tuple2(
+			_Utils_update(
+				pl,
+				{grounded: true}),
+			tile) : _Utils_Tuple2(pl, tile));
+	});
+var author$project$Main$collisions = F2(
+	function (oldState, state) {
+		var player = state.player;
+		var map = state.map;
+		var _n0 = A3(
+			elm$core$List$foldr,
+			author$project$Main$collisionStep(author$project$Main$moveY),
+			_Utils_Tuple2(
+				_Utils_update(
+					player,
+					{grounded: false}),
+				_List_Nil),
+			map);
+		var newPlayerY = _n0.a;
+		var newMapY = _n0.b;
+		var _n1 = A3(
+			elm$core$List$foldr,
+			author$project$Main$collisionStep(author$project$Main$moveX),
+			_Utils_Tuple2(newPlayerY, _List_Nil),
+			newMapY);
+		var newPlayer = _n1.a;
+		var newMap = _n1.b;
+		return _Utils_update(
+			state,
+			{map: newMap, player: newPlayer});
+	});
+var author$project$Main$physics = F2(
+	function (delta, state) {
+		var player = state.player;
+		var friction = 0.95 * (player.grounded ? 0.95 : 1);
+		var newState = _Utils_update(
+			state,
+			{
+				player: _Utils_update(
+					player,
+					{
+						ax: 0,
+						ay: 0,
+						vx: (player.vx * friction) + player.ax,
+						vy: ((player.vy * friction) + player.ay) + author$project$Main$gravity(delta),
+						x: player.x + player.vx,
+						y: player.y + player.vy
+					})
+			});
+		return A2(author$project$Main$collisions, state, newState);
+	});
 var elm$core$Basics$negate = function (n) {
 	return -n;
 };
 var elm$core$Basics$abs = function (n) {
 	return (n < 0) ? (-n) : n;
 };
-var elm$core$Basics$ge = _Utils_ge;
-var elm$core$Basics$min = F2(
-	function (x, y) {
-		return (_Utils_cmp(x, y) < 0) ? x : y;
-	});
-var author$project$Main$tick = F5(
-	function (width, height, delta, input, state) {
-		var xAcc = (50 * delta) / 1000;
+var author$project$Main$tick = F6(
+	function (width, height, count, delta, input, state) {
+		var playerDimensions = author$project$Canvas$Texture$dimensions(state.assets._char.idle);
 		var player = state.player;
-		var gravity = (50 * delta) / 1000;
-		var floorY = height - author$project$Canvas$Texture$dimensions(state.sprites._char.idle).height;
-		var isGrounded = _Utils_cmp(state.player.y, floorY) > -1;
-		var friction = 0.95 * (isGrounded ? 0.95 : 1);
-		var jumpAcc = (isGrounded && (player.vy >= 0)) ? ((850 * delta) / 1000) : ((player.vy > 0) ? (gravity / 2) : (gravity * (7 / 9)));
-		return _Utils_update(
-			state,
-			{
-				player: {
-					ax: input.left ? (-xAcc) : (input.right ? xAcc : 0),
-					ay: gravity + (input.up ? (-jumpAcc) : 0),
-					dir: input.left ? author$project$Main$L : (input.right ? author$project$Main$R : player.dir),
-					status: isGrounded ? (((elm$core$Basics$abs(player.vx) > 0.5) || (input.left || input.right)) ? author$project$Main$Walking : author$project$Main$Idle) : author$project$Main$Jumping,
-					vx: (player.vx * friction) + player.ax,
-					vy: (player.vy * friction) + player.ay,
-					x: player.x + player.vx,
-					y: A2(elm$core$Basics$min, floorY, player.y + player.vy)
+		var floorY = height - playerDimensions.height;
+		var outOfScreen = _Utils_cmp(player.y, floorY) > -1;
+		var ded = function () {
+			var _n0 = player.status;
+			if (_n0.$ === 'Dead') {
+				var f = _n0.a;
+				return true;
+			} else {
+				return false;
+			}
+		}();
+		var deathAcc = 55;
+		return A2(
+			author$project$Main$physics,
+			delta,
+			function () {
+				if (ded) {
+					return state;
+				} else {
+					if (outOfScreen) {
+						return _Utils_update(
+							state,
+							{
+								player: _Utils_update(
+									player,
+									{
+										ay: -deathAcc,
+										status: author$project$Main$Dead(count)
+									})
+							});
+					} else {
+						var xAcc = (50 * delta) / 1000;
+						var wallRight = height - playerDimensions.height;
+						var jumpAcc = player.grounded ? 10 : ((player.vy > 0) ? (author$project$Main$gravity(delta) / 2) : (author$project$Main$gravity(delta) * (7 / 9)));
+						return _Utils_update(
+							state,
+							{
+								player: _Utils_update(
+									player,
+									{
+										ax: input.left ? (-xAcc) : (input.right ? xAcc : 0),
+										ay: input.up ? (-jumpAcc) : 0,
+										dir: input.left ? author$project$Main$L : (input.right ? author$project$Main$R : player.dir),
+										status: player.grounded ? (((elm$core$Basics$abs(player.vx) > 0.5) || (input.left || input.right)) ? author$project$Main$Walking : author$project$Main$Idle) : author$project$Main$Jumping
+									})
+							});
+					}
 				}
-			});
+			}());
 	});
 var author$project$Main$updateKeys = F3(
 	function (key, isDown, model) {
@@ -5253,6 +6010,129 @@ var author$project$Sprites$char = function (spriteSheet) {
 		win: A3(author$project$Sprites$charSprite, 3, 1, spriteSheet)
 	};
 };
+var author$project$Sprites$tileSprite = F3(
+	function (x, y, spriteSheet) {
+		var vgap = 32;
+		var spriteSize = 64;
+		var paddingTop = 40;
+		var paddingLeft = 40;
+		var gap = 32;
+		return A2(
+			author$project$Canvas$Texture$sprite,
+			{height: spriteSize, width: spriteSize, x: (x * (spriteSize + gap)) + paddingLeft, y: (y * (spriteSize + vgap)) + paddingTop},
+			spriteSheet);
+	});
+var author$project$Sprites$tile = function (spriteSheet) {
+	return {
+		allowedBlockPlaceholder: A3(author$project$Sprites$tileSprite, 5, 3, spriteSheet),
+		blockedBlockPlaceholder: A3(author$project$Sprites$tileSprite, 5, 2, spriteSheet),
+		blueBlock: A3(author$project$Sprites$tileSprite, 6, 0, spriteSheet),
+		blueBlockPlaceholder: A3(author$project$Sprites$tileSprite, 8, 0, spriteSheet),
+		blueDiamond: A3(author$project$Sprites$tileSprite, 7, 3, spriteSheet),
+		blueDoor: A3(author$project$Sprites$tileSprite, 6, 6, spriteSheet),
+		blueDoorTop: A3(author$project$Sprites$tileSprite, 6, 5, spriteSheet),
+		blueGem: A3(author$project$Sprites$tileSprite, 7, 2, spriteSheet),
+		blueKey: A3(author$project$Sprites$tileSprite, 7, 4, spriteSheet),
+		bluePortal: A3(author$project$Sprites$tileSprite, 10, 0, spriteSheet),
+		blueSwitch: A3(author$project$Sprites$tileSprite, 10, 5, spriteSheet),
+		blueSwitchPressed: A3(author$project$Sprites$tileSprite, 11, 5, spriteSheet),
+		concrete: A3(author$project$Sprites$tileSprite, 3, 1, spriteSheet),
+		concreteBlock: A3(author$project$Sprites$tileSprite, 4, 4, spriteSheet),
+		concreteBricksBlock: A3(author$project$Sprites$tileSprite, 3, 4, spriteSheet),
+		concreteGrass: A3(author$project$Sprites$tileSprite, 0, 1, spriteSheet),
+		concreteGrassPlatform: A3(author$project$Sprites$tileSprite, 0, 3, spriteSheet),
+		concreteIce: A3(author$project$Sprites$tileSprite, 2, 1, spriteSheet),
+		concreteIcePlatform: A3(author$project$Sprites$tileSprite, 2, 3, spriteSheet),
+		concreteSand: A3(author$project$Sprites$tileSprite, 1, 1, spriteSheet),
+		concreteSandPlaform: A3(author$project$Sprites$tileSprite, 1, 3, spriteSheet),
+		diamondPlaceholder: A3(author$project$Sprites$tileSprite, 6, 3, spriteSheet),
+		emptyBlockPlaceholder: A3(author$project$Sprites$tileSprite, 5, 4, spriteSheet),
+		emptyHeart: A3(author$project$Sprites$tileSprite, 11, 2, spriteSheet),
+		gemPlaceholder: A3(author$project$Sprites$tileSprite, 6, 2, spriteSheet),
+		goldBlock: A3(author$project$Sprites$tileSprite, 3, 2, spriteSheet),
+		goldBlockGemHole: A3(author$project$Sprites$tileSprite, 4, 2, spriteSheet),
+		grass: A3(author$project$Sprites$tileSprite, 2, 5, spriteSheet),
+		greenBlock: A3(author$project$Sprites$tileSprite, 6, 1, spriteSheet),
+		greenBlockPlaceholder: A3(author$project$Sprites$tileSprite, 8, 1, spriteSheet),
+		greenDiamond: A3(author$project$Sprites$tileSprite, 9, 3, spriteSheet),
+		greenDoor: A3(author$project$Sprites$tileSprite, 8, 6, spriteSheet),
+		greenDoorTop: A3(author$project$Sprites$tileSprite, 8, 5, spriteSheet),
+		greenGem: A3(author$project$Sprites$tileSprite, 9, 2, spriteSheet),
+		greenKey: A3(author$project$Sprites$tileSprite, 9, 4, spriteSheet),
+		greenPortal: A3(author$project$Sprites$tileSprite, 10, 1, spriteSheet),
+		greenSwitch: A3(author$project$Sprites$tileSprite, 10, 6, spriteSheet),
+		greenSwitchPressed: A3(author$project$Sprites$tileSprite, 11, 6, spriteSheet),
+		halfHeart: A3(author$project$Sprites$tileSprite, 11, 3, spriteSheet),
+		heart: A3(author$project$Sprites$tileSprite, 11, 4, spriteSheet),
+		keyPlaceholder: A3(author$project$Sprites$tileSprite, 6, 4, spriteSheet),
+		ladder: A3(author$project$Sprites$tileSprite, 1, 4, spriteSheet),
+		ladderTop: A3(author$project$Sprites$tileSprite, 0, 4, spriteSheet),
+		lava: A3(author$project$Sprites$tileSprite, 5, 1, spriteSheet),
+		lavaSurface: A3(author$project$Sprites$tileSprite, 5, 0, spriteSheet),
+		openDoor: A3(author$project$Sprites$tileSprite, 5, 6, spriteSheet),
+		openDoorTop: A3(author$project$Sprites$tileSprite, 5, 5, spriteSheet),
+		redBlock: A3(author$project$Sprites$tileSprite, 7, 1, spriteSheet),
+		redBlockPlaceholder: A3(author$project$Sprites$tileSprite, 9, 1, spriteSheet),
+		redDiamond: A3(author$project$Sprites$tileSprite, 10, 3, spriteSheet),
+		redDoor: A3(author$project$Sprites$tileSprite, 9, 6, spriteSheet),
+		redDoorTop: A3(author$project$Sprites$tileSprite, 9, 5, spriteSheet),
+		redGem: A3(author$project$Sprites$tileSprite, 10, 2, spriteSheet),
+		redKey: A3(author$project$Sprites$tileSprite, 10, 4, spriteSheet),
+		redPortal: A3(author$project$Sprites$tileSprite, 11, 1, spriteSheet),
+		redSwitch: A3(author$project$Sprites$tileSprite, 12, 6, spriteSheet),
+		redSwitchPressed: A3(author$project$Sprites$tileSprite, 13, 6, spriteSheet),
+		sawBlade: A3(author$project$Sprites$tileSprite, 1, 5, spriteSheet),
+		soil: A3(author$project$Sprites$tileSprite, 3, 0, spriteSheet),
+		soilGrass: A3(author$project$Sprites$tileSprite, 0, 0, spriteSheet),
+		soilGrassPlatform: A3(author$project$Sprites$tileSprite, 0, 2, spriteSheet),
+		soilIce: A3(author$project$Sprites$tileSprite, 2, 0, spriteSheet),
+		soilIcePlatform: A3(author$project$Sprites$tileSprite, 2, 2, spriteSheet),
+		soilSand: A3(author$project$Sprites$tileSprite, 1, 0, spriteSheet),
+		soilSandPlatform: A3(author$project$Sprites$tileSprite, 1, 2, spriteSheet),
+		spikes: A3(author$project$Sprites$tileSprite, 0, 5, spriteSheet),
+		water: A3(author$project$Sprites$tileSprite, 4, 1, spriteSheet),
+		waterSurface: A3(author$project$Sprites$tileSprite, 4, 0, spriteSheet),
+		woodBlock: A3(author$project$Sprites$tileSprite, 4, 3, spriteSheet),
+		woodBricksBlock: A3(author$project$Sprites$tileSprite, 3, 3, spriteSheet),
+		woodCrate: A3(author$project$Sprites$tileSprite, 4, 5, spriteSheet),
+		woodFootbridge: A3(author$project$Sprites$tileSprite, 2, 4, spriteSheet),
+		woodFrame: A3(author$project$Sprites$tileSprite, 3, 5, spriteSheet),
+		yellowBlock: A3(author$project$Sprites$tileSprite, 7, 0, spriteSheet),
+		yellowBlockPlaceholder: A3(author$project$Sprites$tileSprite, 9, 0, spriteSheet),
+		yellowDiamond: A3(author$project$Sprites$tileSprite, 8, 3, spriteSheet),
+		yellowDoor: A3(author$project$Sprites$tileSprite, 7, 6, spriteSheet),
+		yellowDoorTop: A3(author$project$Sprites$tileSprite, 7, 5, spriteSheet),
+		yellowGem: A3(author$project$Sprites$tileSprite, 8, 2, spriteSheet),
+		yellowKey: A3(author$project$Sprites$tileSprite, 8, 4, spriteSheet),
+		yellowPortal: A3(author$project$Sprites$tileSprite, 11, 0, spriteSheet),
+		yellowSwitch: A3(author$project$Sprites$tileSprite, 12, 5, spriteSheet),
+		yellowSwitchPressed: A3(author$project$Sprites$tileSprite, 13, 5, spriteSheet)
+	};
+};
+var elm$core$Maybe$map2 = F3(
+	function (func, ma, mb) {
+		if (ma.$ === 'Nothing') {
+			return elm$core$Maybe$Nothing;
+		} else {
+			var a = ma.a;
+			if (mb.$ === 'Nothing') {
+				return elm$core$Maybe$Nothing;
+			} else {
+				var b = mb.a;
+				return elm$core$Maybe$Just(
+					A2(func, a, b));
+			}
+		}
+	});
+var elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
 var elm$core$Platform$Cmd$batch = _Platform_batch;
 var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
 var author$project$Main$update = F2(
@@ -5265,12 +6145,13 @@ var author$project$Main$update = F2(
 					if (_n0.b.$ === 'GameStarted') {
 						var delta = _n0.a.a;
 						var state = _n0.b.a;
-						var newGame = A5(author$project$Main$tick, model.width, model.height, delta, model.input, state);
+						var count = model.count + delta;
+						var newGame = A6(author$project$Main$tick, model.width, model.height, count, delta, model.input, state);
 						return _Utils_Tuple2(
 							_Utils_update(
 								model,
 								{
-									count: model.count + delta,
+									count: count,
 									game: author$project$Main$GameStarted(newGame)
 								}),
 							elm$core$Platform$Cmd$none);
@@ -5293,6 +6174,13 @@ var author$project$Main$update = F2(
 							model,
 							{height: height, width: width}),
 						elm$core$Platform$Cmd$none);
+				case 'PageVisibilityChanged':
+					var vis = _n0.a.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{pageVisibility: vis}),
+						elm$core$Platform$Cmd$none);
 				case 'KeyDown':
 					var key = _n0.a.a;
 					return _Utils_Tuple2(
@@ -5304,39 +6192,77 @@ var author$project$Main$update = F2(
 						A3(author$project$Main$updateKeys, key, false, model),
 						elm$core$Platform$Cmd$none);
 				default:
-					if (_n0.a.a.$ === 'Just') {
-						if (_n0.b.$ === 'LoadingAssets') {
-							var charSpriteSheet = _n0.a.a.a;
-							var _n2 = _n0.b;
-							return _Utils_Tuple2(
-								_Utils_update(
-									model,
-									{
-										game: author$project$Main$GameStarted(
-											{
-												charSpriteSheet: charSpriteSheet,
-												player: {ax: 0, ay: 0, dir: author$project$Main$R, status: author$project$Main$Idle, vx: 0, vy: 0, x: model.width / 3, y: 20},
-												sprites: {
-													_char: author$project$Sprites$char(charSpriteSheet)
-												}
-											})
-									}),
-								elm$core$Platform$Cmd$none);
-						} else {
-							break _n0$7;
-						}
-					} else {
-						if (_n0.b.$ === 'LoadingAssets') {
-							var _n3 = _n0.a.a;
-							var _n4 = _n0.b;
-							return _Utils_Tuple2(
+					if (_n0.b.$ === 'LoadingAssets') {
+						var _n2 = _n0.a;
+						var assetKind = _n2.a;
+						var maybeAsset = _n2.b;
+						var _n3 = _n0.b;
+						var remaining_ = _n3.a;
+						var assets_ = _n3.b;
+						var remaining = remaining_ - 1;
+						var assets = function () {
+							if (assetKind.$ === 'Char') {
+								return _Utils_update(
+									assets_,
+									{_char: maybeAsset});
+							} else {
+								return _Utils_update(
+									assets_,
+									{tile: maybeAsset});
+							}
+						}();
+						return _Utils_Tuple2(
+							(!remaining) ? A2(
+								elm$core$Maybe$withDefault,
 								_Utils_update(
 									model,
 									{game: author$project$Main$LoadingFailed}),
-								elm$core$Platform$Cmd$none);
-						} else {
-							break _n0$7;
-						}
+								A3(
+									elm$core$Maybe$map2,
+									F2(
+										function (charSpriteSheet, tileSpriteSheet) {
+											var tiles = author$project$Sprites$tile(tileSpriteSheet);
+											var _char = author$project$Sprites$char(charSpriteSheet);
+											return _Utils_update(
+												model,
+												{
+													game: author$project$Main$GameStarted(
+														{
+															assets: {_char: _char, charSpriteSheet: charSpriteSheet, tileSpriteSheet: tileSpriteSheet, tiles: tiles},
+															map: function () {
+																var _n4 = author$project$Canvas$Texture$dimensions(tiles.soilGrass);
+																var width = _n4.width;
+																var height = _n4.height;
+																return _List_fromArray(
+																	[
+																		{kind: author$project$Main$Platform, sprite: tiles.soilGrass, x: 50 + (0 * width), y: 450},
+																		{kind: author$project$Main$Platform, sprite: tiles.soilGrass, x: 50 + (1 * width), y: 450},
+																		{kind: author$project$Main$Platform, sprite: tiles.soilGrass, x: 50 + (2 * width), y: 480},
+																		{kind: author$project$Main$Platform, sprite: tiles.soilGrass, x: 50 + (3 * width), y: 550},
+																		{kind: author$project$Main$Platform, sprite: tiles.soilGrass, x: 50 + (4 * width), y: 650},
+																		{kind: author$project$Main$Platform, sprite: tiles.soilGrass, x: 50 + (5 * width), y: 600},
+																		{kind: author$project$Main$Platform, sprite: tiles.soilGrass, x: 50 + (6 * width), y: 550},
+																		{kind: author$project$Main$Platform, sprite: tiles.soilGrass, x: 50 + (7 * width), y: 500}
+																	]);
+															}(),
+															player: function () {
+																var _n5 = author$project$Canvas$Texture$dimensions(_char.idle);
+																var width = _n5.width;
+																var height = _n5.height;
+																return {ax: 0, ay: 0, dir: author$project$Main$R, grounded: false, h: height, sprites: _char, status: author$project$Main$Idle, vx: 0, vy: 0, w: width, x: 100, y: 20};
+															}()
+														})
+												});
+										}),
+									assets._char,
+									assets.tile)) : _Utils_update(
+								model,
+								{
+									game: A2(author$project$Main$LoadingAssets, remaining, assets)
+								}),
+							elm$core$Platform$Cmd$none);
+					} else {
+						break _n0$7;
 					}
 			}
 		}
@@ -5922,7 +6848,7 @@ var elm$json$Json$Decode$at = F2(
 	function (fields, decoder) {
 		return A3(elm$core$List$foldr, elm$json$Json$Decode$field, decoder, fields);
 	});
-var elm$json$Json$Decode$int = _Json_decodeInt;
+var elm$json$Json$Decode$float = _Json_decodeFloat;
 var elm$json$Json$Decode$value = _Json_decodeValue;
 var author$project$Canvas$decodeTextureImageInfo = A2(
 	elm$json$Json$Decode$andThen,
@@ -5937,12 +6863,12 @@ var author$project$Canvas$decodeTextureImageInfo = A2(
 				elm$json$Json$Decode$at,
 				_List_fromArray(
 					['target', 'width']),
-				elm$json$Json$Decode$int),
+				elm$json$Json$Decode$float),
 			A2(
 				elm$json$Json$Decode$at,
 				_List_fromArray(
 					['target', 'height']),
-				elm$json$Json$Decode$int));
+				elm$json$Json$Decode$float));
 	},
 	A2(elm$json$Json$Decode$field, 'target', elm$json$Json$Decode$value));
 var author$project$Canvas$Internal$Texture$TImage = function (a) {
@@ -6061,17 +6987,6 @@ var author$project$Canvas$toHtmlWith = F3(
 				_Utils_Tuple2('__canvas', author$project$Canvas$cnvs),
 				A2(elm$core$List$map, author$project$Canvas$renderTextureSource, options.textures)));
 	});
-var author$project$Canvas$Internal$Texture$TSImageUrl = F2(
-	function (a, b) {
-		return {$: 'TSImageUrl', a: a, b: b};
-	});
-var author$project$Canvas$Texture$loadFromImageUrl = F2(
-	function (url, onLoad) {
-		return A2(author$project$Canvas$Internal$Texture$TSImageUrl, url, onLoad);
-	});
-var author$project$Main$CharacterSpriteLoaded = function (a) {
-	return {$: 'CharacterSpriteLoaded', a: a};
-};
 var author$project$Canvas$Internal$Canvas$Rect = F3(
 	function (a, b, c) {
 		return {$: 'Rect', a: a, b: b, c: c};
@@ -6284,6 +7199,22 @@ var author$project$Canvas$texture = F3(
 					drawable: A2(author$project$Canvas$Internal$Canvas$DrawableTexture, p, t)
 				}));
 	});
+var author$project$Main$renderMap = function (map) {
+	return A2(
+		elm$core$List$map,
+		function (t) {
+			return A3(
+				author$project$Canvas$texture,
+				_List_Nil,
+				_Utils_Tuple2(t.x, t.y),
+				t.sprite);
+		},
+		map);
+};
+var author$project$Canvas$Settings$Rotate = function (a) {
+	return {$: 'Rotate', a: a};
+};
+var author$project$Canvas$Settings$rotate = author$project$Canvas$Settings$Rotate;
 var author$project$Canvas$Settings$Scale = F2(
 	function (a, b) {
 		return {$: 'Scale', a: a, b: b};
@@ -6372,17 +7303,30 @@ var author$project$Canvas$Settings$Translate = F2(
 		return {$: 'Translate', a: a, b: b};
 	});
 var author$project$Canvas$Settings$translate = author$project$Canvas$Settings$Translate;
-var author$project$Main$renderPlayer = F3(
-	function (count, sprites, player) {
+var author$project$Main$renderPlayer = F2(
+	function (count, player) {
+		var sprites = player.sprites;
 		var sprite = function () {
-			var _n1 = player.status;
-			switch (_n1.$) {
+			var _n2 = player.status;
+			switch (_n2.$) {
 				case 'Jumping':
 					return sprites.jump;
 				case 'Walking':
 					return (elm$core$Basics$sin(count / 40) < 0) ? sprites.walk0 : sprites.walk1;
-				default:
+				case 'Idle':
 					return sprites.idle;
+				default:
+					var frame = _n2.a;
+					return sprites.crouch;
+			}
+		}();
+		var rotation = function () {
+			var _n1 = player.status;
+			if (_n1.$ === 'Dead') {
+				var frame = _n1.a;
+				return (count - frame) / 100;
+			} else {
+				return 0;
 			}
 		}();
 		var dimensions = author$project$Canvas$Texture$dimensions(sprite);
@@ -6406,7 +7350,8 @@ var author$project$Main$renderPlayer = F3(
 									return 1;
 								}
 							}(),
-							1)
+							1),
+							author$project$Canvas$Settings$rotate(rotation)
 						]))
 				]),
 			_Utils_Tuple2(-centerOffsetX, -centerOffsetY),
@@ -6429,13 +7374,15 @@ var author$project$Main$render = F4(
 						'Loading...')
 					]);
 			case 'GameStarted':
-				var charSpriteSheet = game.a.charSpriteSheet;
-				var sprites = game.a.sprites;
+				var assets = game.a.assets;
 				var player = game.a.player;
-				return _List_fromArray(
-					[
-						A3(author$project$Main$renderPlayer, count, sprites._char, player)
-					]);
+				var map = game.a.map;
+				return _Utils_ap(
+					author$project$Main$renderMap(map),
+					_List_fromArray(
+						[
+							A2(author$project$Main$renderPlayer, count, player)
+						]));
 			default:
 				return _List_fromArray(
 					[
@@ -6471,10 +7418,7 @@ var author$project$Main$view = function (_n0) {
 				author$project$Canvas$toHtmlWith,
 				{
 					height: elm$core$Basics$round(height),
-					textures: _List_fromArray(
-						[
-							A2(author$project$Canvas$Texture$loadFromImageUrl, 'assets/kenney_simplifiedplatformer/Vector/platformPack_character_vector.svg', author$project$Main$CharacterSpriteLoaded)
-						]),
+					textures: author$project$Main$textures,
 					width: elm$core$Basics$round(width)
 				},
 				_List_Nil,
@@ -6485,573 +7429,6 @@ var author$project$Main$view = function (_n0) {
 			]));
 };
 var elm$browser$Browser$element = _Browser_element;
-var elm$browser$Browser$AnimationManager$Delta = function (a) {
-	return {$: 'Delta', a: a};
-};
-var elm$browser$Browser$AnimationManager$State = F3(
-	function (subs, request, oldTime) {
-		return {oldTime: oldTime, request: request, subs: subs};
-	});
-var elm$browser$Browser$AnimationManager$init = elm$core$Task$succeed(
-	A3(elm$browser$Browser$AnimationManager$State, _List_Nil, elm$core$Maybe$Nothing, 0));
-var elm$browser$Browser$AnimationManager$now = _Browser_now(_Utils_Tuple0);
-var elm$browser$Browser$AnimationManager$rAF = _Browser_rAF(_Utils_Tuple0);
-var elm$core$Platform$sendToSelf = _Platform_sendToSelf;
-var elm$core$Process$kill = _Scheduler_kill;
-var elm$core$Process$spawn = _Scheduler_spawn;
-var elm$browser$Browser$AnimationManager$onEffects = F3(
-	function (router, subs, _n0) {
-		var request = _n0.request;
-		var oldTime = _n0.oldTime;
-		var _n1 = _Utils_Tuple2(request, subs);
-		if (_n1.a.$ === 'Nothing') {
-			if (!_n1.b.b) {
-				var _n2 = _n1.a;
-				return elm$browser$Browser$AnimationManager$init;
-			} else {
-				var _n4 = _n1.a;
-				return A2(
-					elm$core$Task$andThen,
-					function (pid) {
-						return A2(
-							elm$core$Task$andThen,
-							function (time) {
-								return elm$core$Task$succeed(
-									A3(
-										elm$browser$Browser$AnimationManager$State,
-										subs,
-										elm$core$Maybe$Just(pid),
-										time));
-							},
-							elm$browser$Browser$AnimationManager$now);
-					},
-					elm$core$Process$spawn(
-						A2(
-							elm$core$Task$andThen,
-							elm$core$Platform$sendToSelf(router),
-							elm$browser$Browser$AnimationManager$rAF)));
-			}
-		} else {
-			if (!_n1.b.b) {
-				var pid = _n1.a.a;
-				return A2(
-					elm$core$Task$andThen,
-					function (_n3) {
-						return elm$browser$Browser$AnimationManager$init;
-					},
-					elm$core$Process$kill(pid));
-			} else {
-				return elm$core$Task$succeed(
-					A3(elm$browser$Browser$AnimationManager$State, subs, request, oldTime));
-			}
-		}
-	});
-var elm$time$Time$Posix = function (a) {
-	return {$: 'Posix', a: a};
-};
-var elm$time$Time$millisToPosix = elm$time$Time$Posix;
-var elm$browser$Browser$AnimationManager$onSelfMsg = F3(
-	function (router, newTime, _n0) {
-		var subs = _n0.subs;
-		var oldTime = _n0.oldTime;
-		var send = function (sub) {
-			if (sub.$ === 'Time') {
-				var tagger = sub.a;
-				return A2(
-					elm$core$Platform$sendToApp,
-					router,
-					tagger(
-						elm$time$Time$millisToPosix(newTime)));
-			} else {
-				var tagger = sub.a;
-				return A2(
-					elm$core$Platform$sendToApp,
-					router,
-					tagger(newTime - oldTime));
-			}
-		};
-		return A2(
-			elm$core$Task$andThen,
-			function (pid) {
-				return A2(
-					elm$core$Task$andThen,
-					function (_n1) {
-						return elm$core$Task$succeed(
-							A3(
-								elm$browser$Browser$AnimationManager$State,
-								subs,
-								elm$core$Maybe$Just(pid),
-								newTime));
-					},
-					elm$core$Task$sequence(
-						A2(elm$core$List$map, send, subs)));
-			},
-			elm$core$Process$spawn(
-				A2(
-					elm$core$Task$andThen,
-					elm$core$Platform$sendToSelf(router),
-					elm$browser$Browser$AnimationManager$rAF)));
-	});
-var elm$browser$Browser$AnimationManager$Time = function (a) {
-	return {$: 'Time', a: a};
-};
-var elm$core$Basics$composeL = F3(
-	function (g, f, x) {
-		return g(
-			f(x));
-	});
-var elm$browser$Browser$AnimationManager$subMap = F2(
-	function (func, sub) {
-		if (sub.$ === 'Time') {
-			var tagger = sub.a;
-			return elm$browser$Browser$AnimationManager$Time(
-				A2(elm$core$Basics$composeL, func, tagger));
-		} else {
-			var tagger = sub.a;
-			return elm$browser$Browser$AnimationManager$Delta(
-				A2(elm$core$Basics$composeL, func, tagger));
-		}
-	});
-_Platform_effectManagers['Browser.AnimationManager'] = _Platform_createManager(elm$browser$Browser$AnimationManager$init, elm$browser$Browser$AnimationManager$onEffects, elm$browser$Browser$AnimationManager$onSelfMsg, 0, elm$browser$Browser$AnimationManager$subMap);
-var elm$browser$Browser$AnimationManager$subscription = _Platform_leaf('Browser.AnimationManager');
-var elm$browser$Browser$AnimationManager$onAnimationFrameDelta = function (tagger) {
-	return elm$browser$Browser$AnimationManager$subscription(
-		elm$browser$Browser$AnimationManager$Delta(tagger));
-};
-var elm$browser$Browser$Events$onAnimationFrameDelta = elm$browser$Browser$AnimationManager$onAnimationFrameDelta;
-var elm$browser$Browser$Events$Document = {$: 'Document'};
-var elm$browser$Browser$Events$MySub = F3(
-	function (a, b, c) {
-		return {$: 'MySub', a: a, b: b, c: c};
-	});
-var elm$browser$Browser$Events$State = F2(
-	function (subs, pids) {
-		return {pids: pids, subs: subs};
-	});
-var elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
-var elm$core$Dict$empty = elm$core$Dict$RBEmpty_elm_builtin;
-var elm$browser$Browser$Events$init = elm$core$Task$succeed(
-	A2(elm$browser$Browser$Events$State, _List_Nil, elm$core$Dict$empty));
-var elm$browser$Browser$Events$nodeToKey = function (node) {
-	if (node.$ === 'Document') {
-		return 'd_';
-	} else {
-		return 'w_';
-	}
-};
-var elm$browser$Browser$Events$addKey = function (sub) {
-	var node = sub.a;
-	var name = sub.b;
-	return _Utils_Tuple2(
-		_Utils_ap(
-			elm$browser$Browser$Events$nodeToKey(node),
-			name),
-		sub);
-};
-var elm$browser$Browser$Events$Event = F2(
-	function (key, event) {
-		return {event: event, key: key};
-	});
-var elm$browser$Browser$Events$spawn = F3(
-	function (router, key, _n0) {
-		var node = _n0.a;
-		var name = _n0.b;
-		var actualNode = function () {
-			if (node.$ === 'Document') {
-				return _Browser_doc;
-			} else {
-				return _Browser_window;
-			}
-		}();
-		return A2(
-			elm$core$Task$map,
-			function (value) {
-				return _Utils_Tuple2(key, value);
-			},
-			A3(
-				_Browser_on,
-				actualNode,
-				name,
-				function (event) {
-					return A2(
-						elm$core$Platform$sendToSelf,
-						router,
-						A2(elm$browser$Browser$Events$Event, key, event));
-				}));
-	});
-var elm$core$Dict$Black = {$: 'Black'};
-var elm$core$Dict$RBNode_elm_builtin = F5(
-	function (a, b, c, d, e) {
-		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
-	});
-var elm$core$Basics$compare = _Utils_compare;
-var elm$core$Dict$Red = {$: 'Red'};
-var elm$core$Dict$balance = F5(
-	function (color, key, value, left, right) {
-		if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Red')) {
-			var _n1 = right.a;
-			var rK = right.b;
-			var rV = right.c;
-			var rLeft = right.d;
-			var rRight = right.e;
-			if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
-				var _n3 = left.a;
-				var lK = left.b;
-				var lV = left.c;
-				var lLeft = left.d;
-				var lRight = left.e;
-				return A5(
-					elm$core$Dict$RBNode_elm_builtin,
-					elm$core$Dict$Red,
-					key,
-					value,
-					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, lK, lV, lLeft, lRight),
-					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, rK, rV, rLeft, rRight));
-			} else {
-				return A5(
-					elm$core$Dict$RBNode_elm_builtin,
-					color,
-					rK,
-					rV,
-					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, key, value, left, rLeft),
-					rRight);
-			}
-		} else {
-			if ((((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) && (left.d.$ === 'RBNode_elm_builtin')) && (left.d.a.$ === 'Red')) {
-				var _n5 = left.a;
-				var lK = left.b;
-				var lV = left.c;
-				var _n6 = left.d;
-				var _n7 = _n6.a;
-				var llK = _n6.b;
-				var llV = _n6.c;
-				var llLeft = _n6.d;
-				var llRight = _n6.e;
-				var lRight = left.e;
-				return A5(
-					elm$core$Dict$RBNode_elm_builtin,
-					elm$core$Dict$Red,
-					lK,
-					lV,
-					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, llK, llV, llLeft, llRight),
-					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, key, value, lRight, right));
-			} else {
-				return A5(elm$core$Dict$RBNode_elm_builtin, color, key, value, left, right);
-			}
-		}
-	});
-var elm$core$Dict$insertHelp = F3(
-	function (key, value, dict) {
-		if (dict.$ === 'RBEmpty_elm_builtin') {
-			return A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, key, value, elm$core$Dict$RBEmpty_elm_builtin, elm$core$Dict$RBEmpty_elm_builtin);
-		} else {
-			var nColor = dict.a;
-			var nKey = dict.b;
-			var nValue = dict.c;
-			var nLeft = dict.d;
-			var nRight = dict.e;
-			var _n1 = A2(elm$core$Basics$compare, key, nKey);
-			switch (_n1.$) {
-				case 'LT':
-					return A5(
-						elm$core$Dict$balance,
-						nColor,
-						nKey,
-						nValue,
-						A3(elm$core$Dict$insertHelp, key, value, nLeft),
-						nRight);
-				case 'EQ':
-					return A5(elm$core$Dict$RBNode_elm_builtin, nColor, nKey, value, nLeft, nRight);
-				default:
-					return A5(
-						elm$core$Dict$balance,
-						nColor,
-						nKey,
-						nValue,
-						nLeft,
-						A3(elm$core$Dict$insertHelp, key, value, nRight));
-			}
-		}
-	});
-var elm$core$Dict$insert = F3(
-	function (key, value, dict) {
-		var _n0 = A3(elm$core$Dict$insertHelp, key, value, dict);
-		if ((_n0.$ === 'RBNode_elm_builtin') && (_n0.a.$ === 'Red')) {
-			var _n1 = _n0.a;
-			var k = _n0.b;
-			var v = _n0.c;
-			var l = _n0.d;
-			var r = _n0.e;
-			return A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, k, v, l, r);
-		} else {
-			var x = _n0;
-			return x;
-		}
-	});
-var elm$core$Dict$fromList = function (assocs) {
-	return A3(
-		elm$core$List$foldl,
-		F2(
-			function (_n0, dict) {
-				var key = _n0.a;
-				var value = _n0.b;
-				return A3(elm$core$Dict$insert, key, value, dict);
-			}),
-		elm$core$Dict$empty,
-		assocs);
-};
-var elm$core$Dict$foldl = F3(
-	function (func, acc, dict) {
-		foldl:
-		while (true) {
-			if (dict.$ === 'RBEmpty_elm_builtin') {
-				return acc;
-			} else {
-				var key = dict.b;
-				var value = dict.c;
-				var left = dict.d;
-				var right = dict.e;
-				var $temp$func = func,
-					$temp$acc = A3(
-					func,
-					key,
-					value,
-					A3(elm$core$Dict$foldl, func, acc, left)),
-					$temp$dict = right;
-				func = $temp$func;
-				acc = $temp$acc;
-				dict = $temp$dict;
-				continue foldl;
-			}
-		}
-	});
-var elm$core$Dict$merge = F6(
-	function (leftStep, bothStep, rightStep, leftDict, rightDict, initialResult) {
-		var stepState = F3(
-			function (rKey, rValue, _n0) {
-				stepState:
-				while (true) {
-					var list = _n0.a;
-					var result = _n0.b;
-					if (!list.b) {
-						return _Utils_Tuple2(
-							list,
-							A3(rightStep, rKey, rValue, result));
-					} else {
-						var _n2 = list.a;
-						var lKey = _n2.a;
-						var lValue = _n2.b;
-						var rest = list.b;
-						if (_Utils_cmp(lKey, rKey) < 0) {
-							var $temp$rKey = rKey,
-								$temp$rValue = rValue,
-								$temp$_n0 = _Utils_Tuple2(
-								rest,
-								A3(leftStep, lKey, lValue, result));
-							rKey = $temp$rKey;
-							rValue = $temp$rValue;
-							_n0 = $temp$_n0;
-							continue stepState;
-						} else {
-							if (_Utils_cmp(lKey, rKey) > 0) {
-								return _Utils_Tuple2(
-									list,
-									A3(rightStep, rKey, rValue, result));
-							} else {
-								return _Utils_Tuple2(
-									rest,
-									A4(bothStep, lKey, lValue, rValue, result));
-							}
-						}
-					}
-				}
-			});
-		var _n3 = A3(
-			elm$core$Dict$foldl,
-			stepState,
-			_Utils_Tuple2(
-				elm$core$Dict$toList(leftDict),
-				initialResult),
-			rightDict);
-		var leftovers = _n3.a;
-		var intermediateResult = _n3.b;
-		return A3(
-			elm$core$List$foldl,
-			F2(
-				function (_n4, result) {
-					var k = _n4.a;
-					var v = _n4.b;
-					return A3(leftStep, k, v, result);
-				}),
-			intermediateResult,
-			leftovers);
-	});
-var elm$core$Dict$union = F2(
-	function (t1, t2) {
-		return A3(elm$core$Dict$foldl, elm$core$Dict$insert, t2, t1);
-	});
-var elm$browser$Browser$Events$onEffects = F3(
-	function (router, subs, state) {
-		var stepRight = F3(
-			function (key, sub, _n6) {
-				var deads = _n6.a;
-				var lives = _n6.b;
-				var news = _n6.c;
-				return _Utils_Tuple3(
-					deads,
-					lives,
-					A2(
-						elm$core$List$cons,
-						A3(elm$browser$Browser$Events$spawn, router, key, sub),
-						news));
-			});
-		var stepLeft = F3(
-			function (_n4, pid, _n5) {
-				var deads = _n5.a;
-				var lives = _n5.b;
-				var news = _n5.c;
-				return _Utils_Tuple3(
-					A2(elm$core$List$cons, pid, deads),
-					lives,
-					news);
-			});
-		var stepBoth = F4(
-			function (key, pid, _n2, _n3) {
-				var deads = _n3.a;
-				var lives = _n3.b;
-				var news = _n3.c;
-				return _Utils_Tuple3(
-					deads,
-					A3(elm$core$Dict$insert, key, pid, lives),
-					news);
-			});
-		var newSubs = A2(elm$core$List$map, elm$browser$Browser$Events$addKey, subs);
-		var _n0 = A6(
-			elm$core$Dict$merge,
-			stepLeft,
-			stepBoth,
-			stepRight,
-			state.pids,
-			elm$core$Dict$fromList(newSubs),
-			_Utils_Tuple3(_List_Nil, elm$core$Dict$empty, _List_Nil));
-		var deadPids = _n0.a;
-		var livePids = _n0.b;
-		var makeNewPids = _n0.c;
-		return A2(
-			elm$core$Task$andThen,
-			function (pids) {
-				return elm$core$Task$succeed(
-					A2(
-						elm$browser$Browser$Events$State,
-						newSubs,
-						A2(
-							elm$core$Dict$union,
-							livePids,
-							elm$core$Dict$fromList(pids))));
-			},
-			A2(
-				elm$core$Task$andThen,
-				function (_n1) {
-					return elm$core$Task$sequence(makeNewPids);
-				},
-				elm$core$Task$sequence(
-					A2(elm$core$List$map, elm$core$Process$kill, deadPids))));
-	});
-var elm$core$List$maybeCons = F3(
-	function (f, mx, xs) {
-		var _n0 = f(mx);
-		if (_n0.$ === 'Just') {
-			var x = _n0.a;
-			return A2(elm$core$List$cons, x, xs);
-		} else {
-			return xs;
-		}
-	});
-var elm$core$List$filterMap = F2(
-	function (f, xs) {
-		return A3(
-			elm$core$List$foldr,
-			elm$core$List$maybeCons(f),
-			_List_Nil,
-			xs);
-	});
-var elm$browser$Browser$Events$onSelfMsg = F3(
-	function (router, _n0, state) {
-		var key = _n0.key;
-		var event = _n0.event;
-		var toMessage = function (_n2) {
-			var subKey = _n2.a;
-			var _n3 = _n2.b;
-			var node = _n3.a;
-			var name = _n3.b;
-			var decoder = _n3.c;
-			return _Utils_eq(subKey, key) ? A2(_Browser_decodeEvent, decoder, event) : elm$core$Maybe$Nothing;
-		};
-		var messages = A2(elm$core$List$filterMap, toMessage, state.subs);
-		return A2(
-			elm$core$Task$andThen,
-			function (_n1) {
-				return elm$core$Task$succeed(state);
-			},
-			elm$core$Task$sequence(
-				A2(
-					elm$core$List$map,
-					elm$core$Platform$sendToApp(router),
-					messages)));
-	});
-var elm$browser$Browser$Events$subMap = F2(
-	function (func, _n0) {
-		var node = _n0.a;
-		var name = _n0.b;
-		var decoder = _n0.c;
-		return A3(
-			elm$browser$Browser$Events$MySub,
-			node,
-			name,
-			A2(elm$json$Json$Decode$map, func, decoder));
-	});
-_Platform_effectManagers['Browser.Events'] = _Platform_createManager(elm$browser$Browser$Events$init, elm$browser$Browser$Events$onEffects, elm$browser$Browser$Events$onSelfMsg, 0, elm$browser$Browser$Events$subMap);
-var elm$browser$Browser$Events$subscription = _Platform_leaf('Browser.Events');
-var elm$browser$Browser$Events$on = F3(
-	function (node, name, decoder) {
-		return elm$browser$Browser$Events$subscription(
-			A3(elm$browser$Browser$Events$MySub, node, name, decoder));
-	});
-var elm$browser$Browser$Events$onKeyDown = A2(elm$browser$Browser$Events$on, elm$browser$Browser$Events$Document, 'keydown');
-var elm$browser$Browser$Events$onKeyUp = A2(elm$browser$Browser$Events$on, elm$browser$Browser$Events$Document, 'keyup');
-var elm$browser$Browser$Events$Window = {$: 'Window'};
-var elm$browser$Browser$Events$onResize = function (func) {
-	return A3(
-		elm$browser$Browser$Events$on,
-		elm$browser$Browser$Events$Window,
-		'resize',
-		A2(
-			elm$json$Json$Decode$field,
-			'target',
-			A3(
-				elm$json$Json$Decode$map2,
-				func,
-				A2(elm$json$Json$Decode$field, 'innerWidth', elm$json$Json$Decode$int),
-				A2(elm$json$Json$Decode$field, 'innerHeight', elm$json$Json$Decode$int))));
-};
-var elm$core$Platform$Sub$batch = _Platform_batch;
-var elm$json$Json$Decode$float = _Json_decodeFloat;
 var author$project$Main$main = elm$browser$Browser$element(
-	{
-		init: author$project$Main$init,
-		subscriptions: function (model) {
-			return elm$core$Platform$Sub$batch(
-				_List_fromArray(
-					[
-						elm$browser$Browser$Events$onAnimationFrameDelta(author$project$Main$Frame),
-						elm$browser$Browser$Events$onResize(author$project$Main$Resized),
-						elm$browser$Browser$Events$onKeyDown(
-						A2(elm$json$Json$Decode$map, author$project$Main$KeyDown, author$project$Main$keyDecoder)),
-						elm$browser$Browser$Events$onKeyUp(
-						A2(elm$json$Json$Decode$map, author$project$Main$KeyUp, author$project$Main$keyDecoder))
-					]));
-		},
-		update: author$project$Main$update,
-		view: author$project$Main$view
-	});
+	{init: author$project$Main$init, subscriptions: author$project$Main$subscriptions, update: author$project$Main$update, view: author$project$Main$view});
 _Platform_export({'Main':{'init':author$project$Main$main(elm$json$Json$Decode$float)(0)}});}(this));
