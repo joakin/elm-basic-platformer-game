@@ -11,6 +11,7 @@ import Color
 import Html exposing (Html, div)
 import Html.Attributes exposing (style)
 import Json.Decode as D
+import Physics
 import Sprites
 import Task
 
@@ -55,10 +56,7 @@ type alias Map =
 
 
 type alias MapTile =
-    { x : Float
-    , y : Float
-    , w : Float
-    , h : Float
+    { physics : Physics.Object
     , kind : MapTileKind
     , sprite : Texture
     }
@@ -69,14 +67,7 @@ type MapTileKind
 
 
 type alias Player =
-    { x : Float
-    , y : Float
-    , w : Float
-    , h : Float
-    , vx : Float
-    , vy : Float
-    , ax : Float
-    , ay : Float
+    { physics : Physics.Object
     , dir : Dir
     , grounded : Bool
     , status : PlayerStatus
@@ -92,8 +83,8 @@ type PlayerStatus
 
 
 type Dir
-    = L
-    | R
+    = Left
+    | Right
 
 
 type alias Flags =
@@ -170,7 +161,7 @@ update msg model =
         ( Frame delta, GameStarted state ) ->
             let
                 count =
-                    model.count + delta
+                    model.count + Debug.log "delta" delta
 
                 newGame =
                     state |> tick model.width model.height count delta model.input
@@ -241,15 +232,17 @@ update msg model =
                                             { width, height } =
                                                 Texture.dimensions char.idle
                                         in
-                                        { x = 100
-                                        , y = 20
-                                        , w = width
-                                        , h = height
-                                        , vx = 0
-                                        , vy = 0
-                                        , ax = 0
-                                        , ay = 0
-                                        , dir = R
+                                        { physics =
+                                            { x = 100
+                                            , y = 20
+                                            , w = width
+                                            , h = height
+                                            , vx = 0
+                                            , vy = 0
+                                            , ax = 0
+                                            , ay = 0
+                                            }
+                                        , dir = Right
                                         , status = Idle
                                         , grounded = False
                                         , sprites = char
@@ -258,19 +251,22 @@ update msg model =
                                         let
                                             { width, height } =
                                                 Texture.dimensions tiles.soilGrass
+
+                                            emptyObject =
+                                                Physics.emptyObject
                                         in
-                                        [ { kind = Platform, x = 50 + 0 * width, y = 450, w = width, h = height, sprite = tiles.soilGrass }
-                                        , { kind = Platform, x = 50 + 1 * width, y = 450, w = width, h = height, sprite = tiles.soilGrass }
-                                        , { kind = Platform, x = 50 + 2 * width, y = 480, w = width, h = height, sprite = tiles.soilGrass }
-                                        , { kind = Platform, x = 50 + 3 * width, y = 550, w = width, h = height, sprite = tiles.soilGrass }
-                                        , { kind = Platform, x = 50 + 3 * width, y = 300, w = width, h = height, sprite = tiles.soilGrass }
-                                        , { kind = Platform, x = 50 + 4 * width, y = 650, w = width, h = height, sprite = tiles.soilGrass }
-                                        , { kind = Platform, x = 50 + 5 * width, y = 600, w = width, h = height, sprite = tiles.soilGrass }
-                                        , { kind = Platform, x = 50 + 6 * width, y = 550, w = width, h = height, sprite = tiles.soilGrass }
-                                        , { kind = Platform, x = 50 + 7 * width, y = 500, w = width, h = height, sprite = tiles.soilGrass }
-                                        , { kind = Platform, x = 50 + 6 * width, y = 200, w = width, h = height, sprite = tiles.soilGrass }
-                                        , { kind = Platform, x = 50 + 7 * width, y = 200, w = width, h = height, sprite = tiles.soilGrass }
-                                        , { kind = Platform, x = 50 + 8 * width, y = 200, w = width, h = height, sprite = tiles.soilGrass }
+                                        [ { kind = Platform, physics = { emptyObject | x = 50 + 0 * width, y = 450, w = width, h = height }, sprite = tiles.soilGrass }
+                                        , { kind = Platform, physics = { emptyObject | x = 50 + 1 * width, y = 450, w = width, h = height }, sprite = tiles.soilGrass }
+                                        , { kind = Platform, physics = { emptyObject | x = 50 + 2 * width, y = 480, w = width, h = height }, sprite = tiles.soilGrass }
+                                        , { kind = Platform, physics = { emptyObject | x = 50 + 3 * width, y = 550, w = width, h = height }, sprite = tiles.soilGrass }
+                                        , { kind = Platform, physics = { emptyObject | x = 50 + 3 * width, y = 300, w = width, h = height }, sprite = tiles.soilGrass }
+                                        , { kind = Platform, physics = { emptyObject | x = 50 + 4 * width, y = 650, w = width, h = height }, sprite = tiles.soilGrass }
+                                        , { kind = Platform, physics = { emptyObject | x = 50 + 5 * width, y = 600, w = width, h = height }, sprite = tiles.soilGrass }
+                                        , { kind = Platform, physics = { emptyObject | x = 50 + 6 * width, y = 550, w = width, h = height }, sprite = tiles.soilGrass }
+                                        , { kind = Platform, physics = { emptyObject | x = 50 + 7 * width, y = 500, w = width, h = height }, sprite = tiles.soilGrass }
+                                        , { kind = Platform, physics = { emptyObject | x = 50 + 6 * width, y = 200, w = width, h = height }, sprite = tiles.soilGrass }
+                                        , { kind = Platform, physics = { emptyObject | x = 50 + 7 * width, y = 200, w = width, h = height }, sprite = tiles.soilGrass }
+                                        , { kind = Platform, physics = { emptyObject | x = 50 + 8 * width, y = 200, w = width, h = height }, sprite = tiles.soilGrass }
                                         ]
                                     }
                         }
@@ -289,7 +285,7 @@ update msg model =
 
 
 gravity delta =
-    50 {- px per second -} * delta / 1000
+    70 {- px per second -} * delta / 1000
 
 
 tick : Float -> Float -> Float -> Float -> Input -> GameState -> GameState
@@ -305,7 +301,7 @@ tick width height count delta input state =
             height - playerDimensions.height
 
         outOfScreen =
-            player.y >= floorY
+            player.physics.y >= floorY
 
         deathAcc =
             55
@@ -322,7 +318,7 @@ tick width height count delta input state =
         state
 
      else if outOfScreen then
-        { state | player = { player | status = Dead count, ay = -deathAcc } }
+        { state | player = { player | status = Dead count, physics = Physics.push 0 -deathAcc player.physics } }
 
      else
         let
@@ -333,45 +329,49 @@ tick width height count delta input state =
                 50 {- px per second -} * delta / 1000
 
             jumpAcc =
-                if player.grounded && player.vy >= 0 then
-                    25
+                if player.grounded && player.physics.vy >= 0 then
+                    20
 
-                else if player.vy > 0 then
+                else if player.physics.vy > 0 then
                     gravity delta / 3
 
                 else
                     gravity delta * (7 / 9)
+
+            xForce =
+                if input.left then
+                    -xAcc
+
+                else if input.right then
+                    xAcc
+
+                else
+                    0
+
+            yForce =
+                if input.up then
+                    -jumpAcc
+
+                else
+                    0
         in
         { state
             | player =
                 { player
-                    | ax =
-                        if input.left then
-                            -xAcc
-
-                        else if input.right then
-                            xAcc
-
-                        else
-                            0
-                    , ay =
-                        if input.up then
-                            -jumpAcc
-
-                        else
-                            0
+                    | physics =
+                        Physics.push xForce yForce player.physics
                     , dir =
                         if input.left then
-                            L
+                            Left
 
                         else if input.right then
-                            R
+                            Right
 
                         else
                             player.dir
                     , status =
                         if player.grounded then
-                            if abs player.vx > 0.5 || input.left || input.right then
+                            if abs player.physics.vx > 0.5 || input.left || input.right then
                                 Walking
 
                             else
@@ -394,87 +394,32 @@ collisions ({ player, map } as state) =
     { state | player = newPlayer, map = newMap }
 
 
-type CollisionType
-    = CL
-    | CR
-    | CT
-    | CB
-
-
-collisionCheck : Player -> MapTile -> ( Maybe CollisionType, Player )
-collisionCheck player tile =
-    -- get the vectors to check against
-    let
-        vX =
-            (player.x + (player.w / 2)) - (tile.x + (tile.w / 2))
-
-        vY =
-            (player.y + (player.h / 2)) - (tile.y + (tile.h / 2))
-
-        -- add the half widths and half heights of the objects
-        hWidths =
-            (player.w / 2) + (tile.w / 2)
-
-        hHeights =
-            (player.h / 2) + (tile.h / 2)
-
-        colDir =
-            Nothing
-    in
-    -- if the x and y vector are less than the half width or half height, they
-    -- we must be inside the object, causing a collision
-    if abs vX < hWidths && abs vY < hHeights then
-        -- figures out on which side we are colliding (top, bottom, left, or right)
-        let
-            oX =
-                hWidths - abs vX
-
-            oY =
-                hHeights - abs vY
-        in
-        if oX >= oY then
-            if vY > 0 then
-                ( Just CT, { player | y = player.y + oY } )
-
-            else
-                ( Just CB, { player | y = player.y - oY } )
-
-        else if vX > 0 then
-            ( Just CL, { player | x = player.x + oX } )
-
-        else
-            ( Just CR, { player | x = player.x - oX } )
-
-    else
-        ( Nothing, player )
-
-
 collisionStep : MapTile -> ( Player, Map ) -> ( Player, Map )
 collisionStep tile ( player, map ) =
     case tile.kind of
         Platform ->
             let
-                ( maybeCollisionDirection, movedPlayer ) =
-                    collisionCheck player tile
+                ( maybeCollisionDirection, movedPlayerObj ) =
+                    Physics.collisionCheck player.physics tile.physics
 
                 newPlayer =
                     case maybeCollisionDirection of
-                        Just CB ->
-                            { movedPlayer | grounded = True, vy = 0 }
+                        Just Physics.B ->
+                            { player | grounded = True, physics = { movedPlayerObj | vy = 0 } }
 
-                        Just CT ->
-                            { movedPlayer | vy = 0 }
+                        Just Physics.T ->
+                            { player | physics = { movedPlayerObj | vy = 0 } }
 
-                        Just CR ->
-                            { movedPlayer | vx = 0 }
+                        Just Physics.R ->
+                            { player | physics = { movedPlayerObj | vx = 0 } }
 
-                        Just CL ->
-                            { movedPlayer | vx = 0 }
+                        Just Physics.L ->
+                            { player | physics = { movedPlayerObj | vx = 0 } }
 
                         Nothing ->
-                            movedPlayer
+                            { player | physics = movedPlayerObj }
             in
-            ( if standingOn newPlayer tile then
+            ( if newPlayer.physics |> Physics.standingOn tile.physics then
                 { newPlayer | grounded = True }
 
               else
@@ -483,40 +428,24 @@ collisionStep tile ( player, map ) =
             )
 
 
-standingOn : Player -> MapTile -> Bool
-standingOn player tile =
-    if
-        (player.x + player.w > tile.x)
-            && (player.x < tile.x + tile.w)
-            && (player.y + player.h >= tile.y)
-            && (player.y < tile.y + tile.h)
-    then
-        True
-
-    else
-        False
-
-
 physics : Float -> GameState -> GameState
 physics delta ({ player } as state) =
     let
-        friction =
+        frictionX =
             if player.grounded then
                 0.8835
 
             else
                 0.9
 
+        frictionY =
+            0.95
+
         newState =
             { state
                 | player =
                     { player
-                        | x = player.x + player.vx
-                        , y = player.y + player.vy
-                        , vx = player.vx * friction + player.ax
-                        , vy = player.vy * friction + player.ay + gravity delta
-                        , ax = 0
-                        , ay = 0
+                        | physics = Physics.integrate frictionX frictionY (gravity delta) player.physics
                     }
             }
     in
@@ -582,7 +511,7 @@ renderMap : Map -> List Renderable
 renderMap map =
     List.map
         (\t ->
-            texture [] ( t.x, t.y ) t.sprite
+            texture [] ( t.physics.x, t.physics.y ) t.sprite
         )
         map
 
@@ -627,13 +556,13 @@ renderPlayer count ({ sprites } as player) =
     in
     texture
         [ transform
-            [ translate (player.x + centerOffsetX) (player.y + centerOffsetY)
+            [ translate (player.physics.x + centerOffsetX) (player.physics.y + centerOffsetY)
             , scale
                 (case player.dir of
-                    L ->
+                    Left ->
                         -1
 
-                    R ->
+                    Right ->
                         1
                 )
                 1
