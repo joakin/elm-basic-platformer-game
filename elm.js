@@ -5776,94 +5776,120 @@ var author$project$Main$Walking = {$: 'Walking'};
 var author$project$Main$gravity = function (delta) {
 	return (50 * delta) / 1000;
 };
-var author$project$Main$collisionStep = F3(
-	function (resolve, tile, _n0) {
+var author$project$Main$CB = {$: 'CB'};
+var author$project$Main$CL = {$: 'CL'};
+var author$project$Main$CR = {$: 'CR'};
+var author$project$Main$CT = {$: 'CT'};
+var elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var elm$core$Basics$abs = function (n) {
+	return (n < 0) ? (-n) : n;
+};
+var elm$core$Basics$ge = _Utils_ge;
+var author$project$Main$collisionCheck = F2(
+	function (player, tile) {
+		var vY = (player.y + (player.h / 2)) - (tile.y + (tile.h / 2));
+		var vX = (player.x + (player.w / 2)) - (tile.x + (tile.w / 2));
+		var hWidths = (player.w / 2) + (tile.w / 2);
+		var hHeights = (player.h / 2) + (tile.h / 2);
+		var colDir = elm$core$Maybe$Nothing;
+		if ((_Utils_cmp(
+			elm$core$Basics$abs(vX),
+			hWidths) < 0) && (_Utils_cmp(
+			elm$core$Basics$abs(vY),
+			hHeights) < 0)) {
+			var oY = hHeights - elm$core$Basics$abs(vY);
+			var oX = hWidths - elm$core$Basics$abs(vX);
+			return (_Utils_cmp(oX, oY) > -1) ? ((vY > 0) ? _Utils_Tuple2(
+				elm$core$Maybe$Just(author$project$Main$CT),
+				_Utils_update(
+					player,
+					{y: player.y + oY})) : _Utils_Tuple2(
+				elm$core$Maybe$Just(author$project$Main$CB),
+				_Utils_update(
+					player,
+					{y: player.y - oY}))) : ((vX > 0) ? _Utils_Tuple2(
+				elm$core$Maybe$Just(author$project$Main$CL),
+				_Utils_update(
+					player,
+					{x: player.x + oX})) : _Utils_Tuple2(
+				elm$core$Maybe$Just(author$project$Main$CR),
+				_Utils_update(
+					player,
+					{x: player.x - oX})));
+		} else {
+			return _Utils_Tuple2(elm$core$Maybe$Nothing, player);
+		}
+	});
+var author$project$Main$standingOn = F2(
+	function (player, tile) {
+		return ((_Utils_cmp(player.x + player.w, tile.x) > 0) && ((_Utils_cmp(player.x, tile.x + tile.w) < 0) && ((_Utils_cmp(player.y + player.h, tile.y) > -1) && (_Utils_cmp(player.y, tile.y + tile.h) < 0)))) ? true : false;
+	});
+var author$project$Main$collisionStep = F2(
+	function (tile, _n0) {
 		var player = _n0.a;
 		var map = _n0.b;
 		var _n1 = tile.kind;
-		var _n2 = A2(resolve, player, tile);
-		var newPlayer = _n2.a;
-		var newTile = _n2.b;
-		var _n3 = author$project$Canvas$Texture$dimensions(tile.sprite);
-		var width = _n3.width;
-		var height = _n3.height;
+		var _n2 = A2(author$project$Main$collisionCheck, player, tile);
+		var maybeCollisionDirection = _n2.a;
+		var movedPlayer = _n2.b;
+		var newPlayer = function () {
+			if (maybeCollisionDirection.$ === 'Just') {
+				switch (maybeCollisionDirection.a.$) {
+					case 'CB':
+						var _n4 = maybeCollisionDirection.a;
+						return _Utils_update(
+							movedPlayer,
+							{grounded: true, vy: 0});
+					case 'CT':
+						var _n5 = maybeCollisionDirection.a;
+						return _Utils_update(
+							movedPlayer,
+							{vy: 0});
+					case 'CR':
+						var _n6 = maybeCollisionDirection.a;
+						return _Utils_update(
+							movedPlayer,
+							{vx: 0});
+					default:
+						var _n7 = maybeCollisionDirection.a;
+						return _Utils_update(
+							movedPlayer,
+							{vx: 0});
+				}
+			} else {
+				return movedPlayer;
+			}
+		}();
 		return _Utils_Tuple2(
-			newPlayer,
-			A2(elm$core$List$cons, newTile, map));
+			A2(author$project$Main$standingOn, newPlayer, tile) ? _Utils_update(
+				newPlayer,
+				{grounded: true}) : newPlayer,
+			A2(elm$core$List$cons, tile, map));
 	});
-var author$project$Main$collides = F8(
-	function (x1, y1, w1, h1, x2, y2, w2, h2) {
-		return ((_Utils_cmp(x1 + w1, x2) > 0) && ((_Utils_cmp(x1, x2 + w2) < 0) && ((_Utils_cmp(y1 + h1, y2) > 0) && (_Utils_cmp(y1, y2 + h2) < 0)))) ? true : false;
-	});
-var author$project$Main$moveX = F2(
-	function (pl, tile) {
-		var _n0 = author$project$Canvas$Texture$dimensions(tile.sprite);
-		var width = _n0.width;
-		var height = _n0.height;
-		return A8(author$project$Main$collides, pl.x, pl.y, pl.w, pl.h, tile.x, tile.y, width, height) ? ((pl.vx < 0) ? ((_Utils_cmp(tile.x + width, pl.x + pl.w) < 0) ? _Utils_Tuple2(
+var author$project$Main$collisions = function (state) {
+	var player = state.player;
+	var map = state.map;
+	var _n0 = A3(
+		elm$core$List$foldr,
+		author$project$Main$collisionStep,
+		_Utils_Tuple2(
 			_Utils_update(
-				pl,
-				{vx: 0, x: tile.x + width}),
-			tile) : _Utils_Tuple2(pl, tile)) : ((_Utils_cmp(tile.x, pl.x) > 0) ? _Utils_Tuple2(
-			_Utils_update(
-				pl,
-				{vx: 0, x: tile.x - pl.w}),
-			tile) : _Utils_Tuple2(pl, tile))) : _Utils_Tuple2(pl, tile);
-	});
-var elm$core$Basics$ge = _Utils_ge;
-var author$project$Main$standingOn = F8(
-	function (x1, y1, w1, h1, x2, y2, w2, h2) {
-		return ((_Utils_cmp(x1 + w1, x2) > 0) && ((_Utils_cmp(x1, x2 + w2) < 0) && ((_Utils_cmp(y1 + h1, y2) > -1) && (_Utils_cmp(y1, y2 + h2) < 0)))) ? true : false;
-	});
-var author$project$Main$moveY = F2(
-	function (pl, tile) {
-		var _n0 = author$project$Canvas$Texture$dimensions(tile.sprite);
-		var width = _n0.width;
-		var height = _n0.height;
-		return A8(author$project$Main$collides, pl.x, pl.y, pl.w, pl.h, tile.x, tile.y, width, height) ? (((pl.vy < 0) && (_Utils_cmp(tile.y, pl.y) < 0)) ? _Utils_Tuple2(
-			_Utils_update(
-				pl,
-				{vy: 0, y: tile.y + height}),
-			tile) : ((_Utils_cmp(tile.y + height, pl.y + pl.h) > 0) ? _Utils_Tuple2(
-			_Utils_update(
-				pl,
-				{grounded: true, vy: 0, y: tile.y - pl.h}),
-			tile) : _Utils_Tuple2(pl, tile))) : (A8(author$project$Main$standingOn, pl.x, pl.y, pl.w, pl.h, tile.x, tile.y, width, height) ? _Utils_Tuple2(
-			_Utils_update(
-				pl,
-				{grounded: true}),
-			tile) : _Utils_Tuple2(pl, tile));
-	});
-var author$project$Main$collisions = F2(
-	function (oldState, state) {
-		var player = state.player;
-		var map = state.map;
-		var _n0 = A3(
-			elm$core$List$foldr,
-			author$project$Main$collisionStep(author$project$Main$moveY),
-			_Utils_Tuple2(
-				_Utils_update(
-					player,
-					{grounded: false}),
-				_List_Nil),
-			map);
-		var newPlayerY = _n0.a;
-		var newMapY = _n0.b;
-		var _n1 = A3(
-			elm$core$List$foldr,
-			author$project$Main$collisionStep(author$project$Main$moveX),
-			_Utils_Tuple2(newPlayerY, _List_Nil),
-			newMapY);
-		var newPlayer = _n1.a;
-		var newMap = _n1.b;
-		return _Utils_update(
-			state,
-			{map: newMap, player: newPlayer});
-	});
+				player,
+				{grounded: false}),
+			_List_Nil),
+		map);
+	var newPlayer = _n0.a;
+	var newMap = _n0.b;
+	return _Utils_update(
+		state,
+		{map: newMap, player: newPlayer});
+};
 var author$project$Main$physics = F2(
 	function (delta, state) {
 		var player = state.player;
-		var friction = 0.95 * (player.grounded ? 0.95 : 1);
+		var friction = 0.93 * (player.grounded ? 0.95 : 1);
 		var newState = _Utils_update(
 			state,
 			{
@@ -5878,14 +5904,8 @@ var author$project$Main$physics = F2(
 						y: player.y + player.vy
 					})
 			});
-		return A2(author$project$Main$collisions, state, newState);
+		return author$project$Main$collisions(newState);
 	});
-var elm$core$Basics$negate = function (n) {
-	return -n;
-};
-var elm$core$Basics$abs = function (n) {
-	return (n < 0) ? (-n) : n;
-};
 var author$project$Main$tick = F6(
 	function (width, height, count, delta, input, state) {
 		var playerDimensions = author$project$Canvas$Texture$dimensions(state.assets._char.idle);
@@ -5923,7 +5943,7 @@ var author$project$Main$tick = F6(
 					} else {
 						var xAcc = (50 * delta) / 1000;
 						var wallRight = height - playerDimensions.height;
-						var jumpAcc = player.grounded ? 10 : ((player.vy > 0) ? (author$project$Main$gravity(delta) / 2) : (author$project$Main$gravity(delta) * (7 / 9)));
+						var jumpAcc = (player.grounded && (player.vy >= 0)) ? 20 : ((player.vy > 0) ? (author$project$Main$gravity(delta) / 2) : (author$project$Main$gravity(delta) * (7 / 9)));
 						return _Utils_update(
 							state,
 							{
@@ -6235,14 +6255,17 @@ var author$project$Main$update = F2(
 																var height = _n4.height;
 																return _List_fromArray(
 																	[
-																		{kind: author$project$Main$Platform, sprite: tiles.soilGrass, x: 50 + (0 * width), y: 450},
-																		{kind: author$project$Main$Platform, sprite: tiles.soilGrass, x: 50 + (1 * width), y: 450},
-																		{kind: author$project$Main$Platform, sprite: tiles.soilGrass, x: 50 + (2 * width), y: 480},
-																		{kind: author$project$Main$Platform, sprite: tiles.soilGrass, x: 50 + (3 * width), y: 550},
-																		{kind: author$project$Main$Platform, sprite: tiles.soilGrass, x: 50 + (4 * width), y: 650},
-																		{kind: author$project$Main$Platform, sprite: tiles.soilGrass, x: 50 + (5 * width), y: 600},
-																		{kind: author$project$Main$Platform, sprite: tiles.soilGrass, x: 50 + (6 * width), y: 550},
-																		{kind: author$project$Main$Platform, sprite: tiles.soilGrass, x: 50 + (7 * width), y: 500}
+																		{h: height, kind: author$project$Main$Platform, sprite: tiles.soilGrass, w: width, x: 50 + (0 * width), y: 450},
+																		{h: height, kind: author$project$Main$Platform, sprite: tiles.soilGrass, w: width, x: 50 + (1 * width), y: 450},
+																		{h: height, kind: author$project$Main$Platform, sprite: tiles.soilGrass, w: width, x: 50 + (2 * width), y: 480},
+																		{h: height, kind: author$project$Main$Platform, sprite: tiles.soilGrass, w: width, x: 50 + (3 * width), y: 550},
+																		{h: height, kind: author$project$Main$Platform, sprite: tiles.soilGrass, w: width, x: 50 + (4 * width), y: 650},
+																		{h: height, kind: author$project$Main$Platform, sprite: tiles.soilGrass, w: width, x: 50 + (5 * width), y: 600},
+																		{h: height, kind: author$project$Main$Platform, sprite: tiles.soilGrass, w: width, x: 50 + (6 * width), y: 550},
+																		{h: height, kind: author$project$Main$Platform, sprite: tiles.soilGrass, w: width, x: 50 + (7 * width), y: 500},
+																		{h: height, kind: author$project$Main$Platform, sprite: tiles.soilGrass, w: width, x: 50 + (6 * width), y: 200},
+																		{h: height, kind: author$project$Main$Platform, sprite: tiles.soilGrass, w: width, x: 50 + (7 * width), y: 200},
+																		{h: height, kind: author$project$Main$Platform, sprite: tiles.soilGrass, w: width, x: 50 + (8 * width), y: 200}
 																	]);
 															}(),
 															player: function () {
