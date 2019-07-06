@@ -292,7 +292,12 @@ update msg ({ input, count, width, height, game } as model) =
                                         , tile .soilGrassPlatform Platform (50 + 7 * 64) 200
                                         , tile .soilGrassPlatform Platform (50 + 8 * 64) 200
                                         , tile .soilSand Platform (700 + 0 * 64) 450
-                                        , tile .soilSand Platform (700 + 1 * 64) 450
+                                        , tile .soil Platform (700 + 1 * 64) 450
+                                        , tile .soil Platform (700 + 1 * 64) (450 - 1 * 64)
+                                        , tile .soil Platform (700 + 1 * 64) (450 - 2 * 64)
+                                        , tile .soil Platform (700 + 1 * 64) (450 - 3 * 64)
+                                        , tile .soil Platform (700 + 1 * 64) (450 - 4 * 64)
+                                        , tile .soilSand Platform (700 + 1 * 64) (450 - 5 * 64)
                                         , tile .soilSand Platform (700 + 2 * 64) 480
                                         , tile .soilSand Platform (700 + 3 * 64) 550
                                         , tile .soilSand Platform (700 + 4 * 64) 650
@@ -453,7 +458,7 @@ collisionStep tile ( player, map ) =
                             { player | physics = { movedPlayerObj | vx = 0 } }
 
                         Nothing ->
-                            { player | physics = movedPlayerObj }
+                            player
             in
             ( if newPlayer.physics |> Physics.standingOn tile.physics then
                 { newPlayer | grounded = True }
@@ -465,17 +470,29 @@ collisionStep tile ( player, map ) =
 
 
 physics : Float -> GameState -> GameState
-physics delta ({ player } as state) =
+physics remainingDelta ({ player } as state) =
     let
+        _ =
+            Debug.log "dt" remainingDelta
+
+        maxDelta =
+            6
+
+        delta =
+            min remainingDelta maxDelta
+
+        newRemainingDelta =
+            max 0 (remainingDelta - maxDelta)
+
         frictionX =
             if player.grounded then
-                0.8835
+                0.89
 
             else
-                0.9
+                0.91
 
         frictionY =
-            0.95
+            0.93
 
         newState =
             { state
@@ -484,8 +501,13 @@ physics delta ({ player } as state) =
                         | physics = Physics.integrate frictionX frictionY (gravity delta) player.physics
                     }
             }
+                |> collisions
     in
-    collisions newState
+    if newRemainingDelta > 0 then
+        physics newRemainingDelta newState
+
+    else
+        newState
 
 
 updateKeys : String -> Bool -> Model -> Model
