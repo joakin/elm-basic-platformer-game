@@ -10,6 +10,7 @@ module Sprites exposing
 
 import Canvas exposing (..)
 import Canvas.Settings exposing (..)
+import Canvas.Settings.Advanced exposing (..)
 import Canvas.Texture as Texture exposing (Texture)
 import Color
 

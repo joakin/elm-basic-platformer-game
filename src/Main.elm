@@ -5,6 +5,7 @@ import Browser.Dom exposing (Viewport, getViewport)
 import Browser.Events exposing (..)
 import Canvas exposing (..)
 import Canvas.Settings exposing (..)
+import Canvas.Settings.Advanced exposing (..)
 import Canvas.Settings.Text exposing (..)
 import Canvas.Texture as Texture exposing (Texture)
 import Color
@@ -472,9 +473,6 @@ collisionStep tile ( player, map ) =
 physics : Float -> GameState -> GameState
 physics remainingDelta ({ player } as state) =
     let
-        _ =
-            Debug.log "dt" remainingDelta
-
         maxDelta =
             6
 
