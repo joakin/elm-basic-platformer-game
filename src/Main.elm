@@ -327,7 +327,7 @@ update msg ({ input, count, width, height, game } as model) =
 
 
 gravity delta =
-    70 {- px per second -} * delta / 1000
+    50 {- px per second -} * delta / 1000
 
 
 tick : Float -> Float -> Float -> Float -> Input -> GameState -> GameState
@@ -484,13 +484,13 @@ physics remainingDelta ({ player } as state) =
 
         frictionX =
             if player.grounded then
-                0.89
+                0.9
 
             else
-                0.91
+                0.92
 
         frictionY =
-            0.93
+            0.92
 
         newState =
             { state
