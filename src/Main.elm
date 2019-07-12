@@ -11,7 +11,9 @@ import Canvas.Texture as Texture exposing (Texture)
 import Color
 import Html exposing (Html, div)
 import Html.Attributes exposing (style)
+import Html.Events.Extra.Touch as Touch exposing (Touch)
 import Json.Decode as D
+import List.Extra as List
 import Physics
 import Sprites
 import Task
@@ -36,6 +38,8 @@ type alias Input =
     { left : Bool
     , right : Bool
     , up : Bool
+    , touchLeft : Maybe { started : Float }
+    , touchRight : Maybe { started : Float }
     }
 
 
@@ -104,6 +108,10 @@ type Msg
     | Resized Int Int
     | KeyDown String
     | KeyUp String
+    | TouchStart Touch.Event
+    | TouchMove Touch.Event
+    | TouchEnd Touch.Event
+    | TouchCancel Touch.Event
     | AssetLoaded AssetKind (Maybe Texture)
     | PageVisibilityChanged Visibility
 
@@ -153,7 +161,7 @@ init random =
     ( { count = 0
       , screen = { width = 400, height = 400 }
       , game = LoadingAssets (List.length textures) { char = Nothing, tile = Nothing }
-      , input = { left = False, right = False, up = False }
+      , input = { left = False, right = False, up = False, touchLeft = Nothing, touchRight = Nothing }
       , pageVisibility = Visible
       }
     , Task.perform GetViewport getViewport
@@ -211,6 +219,18 @@ update msg ({ input, count, screen, game } as model) =
 
         ( KeyUp key, _ ) ->
             ( updateKeys key False model, Cmd.none )
+
+        ( TouchStart event, _ ) ->
+            ( updateTouches event model, Cmd.none )
+
+        ( TouchMove event, _ ) ->
+            ( updateTouches event model, Cmd.none )
+
+        ( TouchEnd event, _ ) ->
+            ( updateTouches event model, Cmd.none )
+
+        ( TouchCancel event, _ ) ->
+            ( updateTouches event model, Cmd.none )
 
         ( AssetLoaded assetKind maybeAsset, LoadingAssets remaining_ assets_ ) ->
             let
@@ -562,6 +582,80 @@ updateKeys key isDown ({ input } as model) =
             model
 
 
+updateTouches : Touch.Event -> Model -> Model
+updateTouches event ({ screen, input, count } as model) =
+    let
+        findTouchInCoords x y w h =
+            List.find
+                (\t ->
+                    let
+                        ( tx, ty ) =
+                            t.clientPos
+                    in
+                    tx > x && tx < x + w && ty > y && ty < y + h
+                )
+                event.touches
+
+        newInput =
+            { input
+                | touchLeft =
+                    let
+                        l =
+                            findTouchInCoords 0 0 (screen.width / 2) screen.height
+                    in
+                    case l of
+                        Nothing ->
+                            Nothing
+
+                        Just _ ->
+                            case input.touchLeft of
+                                Nothing ->
+                                    Just { started = count }
+
+                                _ ->
+                                    input.touchLeft
+                , touchRight =
+                    let
+                        l =
+                            findTouchInCoords (screen.width / 2) 0 (screen.width / 2) screen.height
+                    in
+                    case l of
+                        Nothing ->
+                            Nothing
+
+                        Just _ ->
+                            case input.touchRight of
+                                Nothing ->
+                                    Just { started = count }
+
+                                _ ->
+                                    input.touchRight
+            }
+    in
+    { model
+        | input =
+            case ( newInput.touchLeft, newInput.touchRight ) of
+                ( Just { started }, Nothing ) ->
+                    { newInput | left = True, right = False, up = False }
+
+                ( Nothing, Just { started } ) ->
+                    { newInput | left = False, right = True, up = False }
+
+                ( Just left, Just right ) ->
+                    if left.started < right.started then
+                        { newInput | left = True, right = False, up = True }
+
+                    else if left.started > right.started then
+                        { newInput | left = False, right = True, up = True }
+
+                    else
+                        { newInput | left = False, right = False, up = True }
+
+                ( Nothing, Nothing ) ->
+                    { newInput | left = False, right = False, up = False }
+    }
+
+
 view : Model -> Html Msg
 view { count, screen, game } =
     div
@@ -574,7 +668,11 @@ view { count, screen, game } =
             , height = round screen.height
             , textures = textures
             }
-            []
+            [ Touch.onStart TouchStart
+            , Touch.onMove TouchMove
+            , Touch.onEnd TouchEnd
+            , Touch.onCancel TouchCancel
+            ]
             (clearScreen screen.width screen.height :: render count screen game)
         ]
 
