@@ -19,11 +19,16 @@ import Task
 
 type alias Model =
     { count : Float
-    , width : Float
-    , height : Float
+    , screen : Screen
     , game : GameStatus
     , input : Input
     , pageVisibility : Visibility
+    }
+
+
+type alias Screen =
+    { width : Float
+    , height : Float
     }
 
 
@@ -47,6 +52,7 @@ type alias GameState =
         , char : Sprites.Char
         , tiles : Sprites.Tiles
         }
+    , camera : Camera
     , player : Player
     , map : Map
     }
@@ -117,6 +123,10 @@ textures =
     ]
 
 
+type alias Camera =
+    { x : Float, y : Float }
+
+
 main : Program Flags Model Msg
 main =
     Browser.element
@@ -141,8 +151,7 @@ subscriptions model =
 init : Flags -> ( Model, Cmd Msg )
 init random =
     ( { count = 0
-      , width = 400
-      , height = 400
+      , screen = { width = 400, height = 400 }
       , game = LoadingAssets (List.length textures) { char = Nothing, tile = Nothing }
       , input = { left = False, right = False, up = False }
       , pageVisibility = Visible
@@ -152,7 +161,7 @@ init random =
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg ({ input, count, width, height, game } as model) =
+update msg ({ input, count, screen, game } as model) =
     -- let
     --     _ =
     --         Debug.log "msg, model" ( msg, model )
@@ -165,7 +174,7 @@ update msg ({ input, count, width, height, game } as model) =
                     count + delta
 
                 newGame =
-                    state |> tick width height newCount delta input
+                    state |> tick screen newCount delta input
             in
             ( { model
                 | count = newCount
@@ -176,14 +185,21 @@ update msg ({ input, count, width, height, game } as model) =
 
         ( GetViewport data, _ ) ->
             ( { model
-                | width = data.viewport.width
-                , height = data.viewport.height
+                | screen =
+                    { width = data.viewport.width
+                    , height = data.viewport.height
+                    }
               }
             , Cmd.none
             )
 
         ( Resized newWidth newHeight, _ ) ->
-            ( { model | width = toFloat newWidth, height = toFloat newHeight }
+            ( { model
+                | screen =
+                    { width = toFloat newWidth
+                    , height = toFloat newHeight
+                    }
+              }
             , Cmd.none
             )
 
@@ -222,13 +238,17 @@ update msg ({ input, count, width, height, game } as model) =
                         { model
                             | game =
                                 GameStarted
-                                    { assets =
+                                    ({ assets =
                                         { charSpriteSheet = charSpriteSheet
                                         , tileSpriteSheet = tileSpriteSheet
                                         , char = char
                                         , tiles = tiles
                                         }
-                                    , player =
+                                     , camera =
+                                        { x = 0
+                                        , y = 0
+                                        }
+                                     , player =
                                         let
                                             cd =
                                                 Texture.dimensions char.idle
@@ -252,7 +272,7 @@ update msg ({ input, count, width, height, game } as model) =
                                         , grounded = False
                                         , sprites = char
                                         }
-                                    , map =
+                                     , map =
                                         let
                                             tile get mapTileKind x y =
                                                 let
@@ -310,7 +330,9 @@ update msg ({ input, count, width, height, game } as model) =
                                         , tile .soilSandPlatform Platform (700 + 7 * 64) 200
                                         , tile .soilSandPlatform Platform (700 + 8 * 64) 200
                                         ]
-                                    }
+                                     }
+                                        |> syncCamera screen
+                                    )
                         }
                     )
                     assets.char
@@ -330,8 +352,8 @@ gravity delta =
     50 {- px per second -} * delta / 1000
 
 
-tick : Float -> Float -> Float -> Float -> Input -> GameState -> GameState
-tick width height count delta input state =
+tick : Screen -> Float -> Float -> Input -> GameState -> GameState
+tick screen count delta input state =
     let
         player =
             state.player
@@ -340,13 +362,13 @@ tick width height count delta input state =
             Texture.dimensions state.assets.char.idle
 
         floorY =
-            height - playerDimensions.height
+            screen.height - playerDimensions.height
 
         outOfScreen =
             player.physics.y >= floorY
 
         deathAcc =
-            55
+            35
 
         ded =
             case player.status of
@@ -364,18 +386,19 @@ tick width height count delta input state =
 
      else
         let
-            wallRight =
-                height - playerDimensions.height
-
             xAcc =
-                50 {- px per second -} * delta / 1000
+                if player.grounded then
+                    35 {- px per second -} * delta / 1000
+
+                else
+                    15 {- px per second -} * delta / 1000
 
             jumpAcc =
                 if player.grounded && player.physics.vy >= 0 then
-                    20
+                    8
 
                 else if player.physics.vy > 0 then
-                    gravity delta / 3
+                    gravity delta / 2.5
 
                 else
                     gravity delta * (7 / 9)
@@ -425,6 +448,17 @@ tick width height count delta input state =
         }
     )
         |> physics delta
+        |> syncCamera screen
+
+
+syncCamera : Screen -> GameState -> GameState
+syncCamera screen ({ player, camera } as state) =
+    { state
+        | camera =
+            { x = player.physics.x + player.physics.w / 2 - screen.width / 2
+            , y = player.physics.y + player.physics.h / 2 - screen.height / 2
+            }
+    }
 
 
 collisions : GameState -> GameState
@@ -484,19 +518,23 @@ physics remainingDelta ({ player } as state) =
 
         frictionX =
             if player.grounded then
-                0.9
-
-            else
                 0.92
 
-        frictionY =
-            0.92
+            else
+                0.99
 
+        frictionY =
+            0.985
+
+        maxVX =
+            300 {- px / second -} * 16 / 1000
+
+        -- 50 * 16 / 1000 = 0.8
         newState =
             { state
                 | player =
                     { player
-                        | physics = Physics.integrate frictionX frictionY (gravity delta) player.physics
+                        | physics = Physics.integrate frictionX frictionY maxVX (gravity delta) player.physics
                     }
             }
                 |> collisions
@@ -525,19 +563,19 @@ updateKeys key isDown ({ input } as model) =
 
 
 view : Model -> Html Msg
-view { count, width, height, game } =
+view { count, screen, game } =
     div
         [ style "display" "flex"
         , style "justify-content" "center"
         , style "align-items" "center"
         ]
         [ Canvas.toHtmlWith
-            { width = round width
-            , height = round height
+            { width = round screen.width
+            , height = round screen.height
             , textures = textures
             }
             []
-            (clearScreen width height :: render count width height game)
+            (clearScreen screen.width screen.height :: render count screen game)
         ]
 
 
@@ -545,40 +583,41 @@ clearScreen width height =
     shapes [ fill Color.lightGray ] [ rect ( 0, 0 ) width height ]
 
 
-render : Float -> Float -> Float -> GameStatus -> List Renderable
-render count width height game =
+render : Float -> Screen -> GameStatus -> List Renderable
+render count screen game =
     case game of
         LoadingAssets _ _ ->
-            [ text [ font { family = "sans-serif", size = 48 } ] ( width / 2, height / 2 ) "Loading..." ]
+            [ text [ font { family = "sans-serif", size = 48 } ] ( screen.width / 2, screen.height / 2 ) "Loading..." ]
 
-        GameStarted { assets, player, map } ->
+        GameStarted { assets, camera, player, map } ->
             -- Sprites.tileSpriteSheetDebugRenderable assets.tileSpriteSheet ++
-            renderMap map
-                ++ [ renderPlayer count player
+            renderMap screen camera map
+                ++ [ renderPlayer screen count camera player
 
                    -- , debugBox ( player.physics.x + player.physics.bx, player.physics.y + player.physics.by ) player.physics.bw player.physics.bh
                    ]
 
         LoadingFailed ->
-            [ text [ font { family = "sans-serif", size = 48 } ] ( width / 2, height / 2 ) "Loading failed.\nPlease reload." ]
+            [ text [ font { family = "sans-serif", size = 48 } ] ( screen.width / 2, screen.height / 2 ) "Loading failed.\nPlease reload." ]
 
 
-renderMap : Map -> List Renderable
-renderMap map =
-    List.map
-        (\t ->
-            texture [] ( t.physics.x, t.physics.y ) t.texture
-        )
-        -- map
-        -- ++ List.map
-        --     (\t ->
-        --         debugBox ( t.physics.x + t.physics.bx, t.physics.y + t.physics.by ) t.physics.bw t.physics.bh
-        --     )
-        map
+renderMap : Screen -> Camera -> Map -> List Renderable
+renderMap screen camera map =
+    map
+        |> List.filter (\t -> visible screen camera t.physics)
+        |> List.map (\t -> texture [] (screenCoords screen camera t.physics) t.texture)
 
 
-renderPlayer : Float -> Player -> Renderable
-renderPlayer count ({ sprites } as player) =
+
+-- ++ List.map
+--     (\t ->
+--         debugBox ( t.physics.x + t.physics.bx, t.physics.y + t.physics.by ) t.physics.bw t.physics.bh
+--     )
+--     map
+
+
+renderPlayer : Screen -> Float -> Camera -> Player -> Renderable
+renderPlayer screen count camera ({ sprites } as player) =
     let
         playerTexture =
             case player.status of
@@ -609,6 +648,9 @@ renderPlayer count ({ sprites } as player) =
         dimensions =
             Texture.dimensions playerTexture
 
+        ( x, y ) =
+            screenCoords screen camera player.physics
+
         centerOffsetX =
             dimensions.width / 2
 
@@ -617,7 +659,7 @@ renderPlayer count ({ sprites } as player) =
     in
     texture
         [ transform
-            [ translate (player.physics.x + centerOffsetX) (player.physics.y + centerOffsetY)
+            [ translate (x + centerOffsetX) (y + centerOffsetY)
             , scale
                 (case player.dir of
                     Left ->
@@ -632,6 +674,19 @@ renderPlayer count ({ sprites } as player) =
         ]
         ( -centerOffsetX, -centerOffsetY )
         playerTexture
+
+
+visible : Screen -> Camera -> { a | x : Float, y : Float, w : Float, h : Float } -> Bool
+visible screen camera obj =
+    (obj.x + obj.w > camera.x)
+        && (obj.x < camera.x + screen.width)
+        && (obj.y + obj.h > camera.y)
+        && (obj.y < camera.y + screen.height)
+
+
+screenCoords : Screen -> Camera -> { a | x : Float, y : Float } -> ( Float, Float )
+screenCoords screen camera obj =
+    ( obj.x - camera.x, obj.y - camera.y )
 
 
 debugBox pos w h =

@@ -116,12 +116,12 @@ standingOn o2 o1 =
         False
 
 
-integrate : Float -> Float -> Float -> Object -> Object
-integrate frictionX frictionY gravity obj =
+integrate : Float -> Float -> Float -> Float -> Object -> Object
+integrate frictionX frictionY maxVX gravity obj =
     { obj
         | x = obj.x + obj.vx
         , y = obj.y + obj.vy
-        , vx = (obj.vx + obj.ax) * frictionX
+        , vx = clamp -maxVX maxVX ((obj.vx + obj.ax) * frictionX)
         , vy = (obj.vy + obj.ay + gravity) * frictionY
         , ax = 0
         , ay = 0
