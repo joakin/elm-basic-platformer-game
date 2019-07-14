@@ -75,6 +75,7 @@ type alias MapTile =
 
 type MapTileKind
     = Platform
+    | Deadly
 
 
 type alias Player =
@@ -320,36 +321,45 @@ update msg ({ input, count, screen, game } as model) =
                                             emptyObject =
                                                 Physics.emptyObject
                                         in
-                                        [ tile .soilGrass Platform (50 + 0 * 64) 450
-                                        , tile .soilGrass Platform (50 + 1 * 64) 450
-                                        , tile .soilGrass Platform (50 + 2 * 64) 480
-                                        , tile .soilGrass Platform (50 + 3 * 64) 550
-                                        , tile .soilGrass Platform (50 + 4 * 64) 650
-                                        , tile .soilGrass Platform (50 + 5 * 64) 600
-                                        , tile .soilGrass Platform (50 + 6 * 64) 550
-                                        , tile .soilGrass Platform (50 + 7 * 64) 500
-                                        , tile .soilGrassPlatform Platform (50 + 3 * 64) 300
-                                        , tile .soilGrassPlatform Platform (50 + 6 * 64) 200
-                                        , tile .soilGrassPlatform Platform (50 + 7 * 64) 200
-                                        , tile .soilGrassPlatform Platform (50 + 8 * 64) 200
-                                        , tile .soilSand Platform (700 + 0 * 64) 450
-                                        , tile .soil Platform (700 + 1 * 64) 450
-                                        , tile .soil Platform (700 + 1 * 64) (450 - 1 * 64)
-                                        , tile .soil Platform (700 + 1 * 64) (450 - 2 * 64)
-                                        , tile .soil Platform (700 + 1 * 64) (450 - 3 * 64)
-                                        , tile .soil Platform (700 + 1 * 64) (450 - 4 * 64)
-                                        , tile .soilSand Platform (700 + 1 * 64) (450 - 5 * 64)
-                                        , tile .soilSand Platform (700 + 2 * 64) 480
-                                        , tile .soilSand Platform (700 + 3 * 64) 550
-                                        , tile .soilSand Platform (700 + 4 * 64) 650
-                                        , tile .soilSand Platform (700 + 5 * 64) 600
-                                        , tile .soilSand Platform (700 + 6 * 64) 550
-                                        , tile .soilSand Platform (700 + 7 * 64) 500
-                                        , tile .soilSandPlatform Platform (700 + 3 * 64) 300
-                                        , tile .soilSandPlatform Platform (700 + 6 * 64) 200
-                                        , tile .soilSandPlatform Platform (700 + 7 * 64) 200
-                                        , tile .soilSandPlatform Platform (700 + 8 * 64) 200
-                                        ]
+                                        (List.range -50 50
+                                            |> List.concatMap
+                                                (\i ->
+                                                    [ tile .lavaSurface Deadly (toFloat i * 64) 750
+                                                    , tile .lava Deadly (toFloat i * 64) (750 + 64)
+                                                    , tile .lava Deadly (toFloat i * 64) (750 + 64 * 2)
+                                                    ]
+                                                )
+                                        )
+                                            ++ [ tile .soilGrass Platform (50 + 0 * 64) 450
+                                               , tile .soilGrass Platform (50 + 1 * 64) 450
+                                               , tile .soilGrass Platform (50 + 2 * 64) 480
+                                               , tile .soilGrass Platform (50 + 3 * 64) 550
+                                               , tile .soilGrass Platform (50 + 4 * 64) 650
+                                               , tile .soilGrass Platform (50 + 5 * 64) 600
+                                               , tile .soilGrass Platform (50 + 6 * 64) 550
+                                               , tile .soilGrass Platform (50 + 7 * 64) 500
+                                               , tile .soilGrassPlatform Platform (50 + 3 * 64) 300
+                                               , tile .soilGrassPlatform Platform (50 + 6 * 64) 200
+                                               , tile .soilGrassPlatform Platform (50 + 7 * 64) 200
+                                               , tile .soilGrassPlatform Platform (50 + 8 * 64) 200
+                                               , tile .soilSand Platform (700 + 0 * 64) 450
+                                               , tile .soil Platform (700 + 1 * 64) 450
+                                               , tile .soil Platform (700 + 1 * 64) (450 - 1 * 64)
+                                               , tile .soil Platform (700 + 1 * 64) (450 - 2 * 64)
+                                               , tile .soil Platform (700 + 1 * 64) (450 - 3 * 64)
+                                               , tile .soil Platform (700 + 1 * 64) (450 - 4 * 64)
+                                               , tile .soilSand Platform (700 + 1 * 64) (450 - 5 * 64)
+                                               , tile .soilSand Platform (700 + 2 * 64) 480
+                                               , tile .soilSand Platform (700 + 3 * 64) 550
+                                               , tile .soilSand Platform (700 + 4 * 64) 650
+                                               , tile .soilSand Platform (700 + 5 * 64) 600
+                                               , tile .soilSand Platform (700 + 6 * 64) 550
+                                               , tile .soilSand Platform (700 + 7 * 64) 500
+                                               , tile .soilSandPlatform Platform (700 + 3 * 64) 300
+                                               , tile .soilSandPlatform Platform (700 + 6 * 64) 200
+                                               , tile .soilSandPlatform Platform (700 + 7 * 64) 200
+                                               , tile .soilSandPlatform Platform (700 + 8 * 64) 200
+                                               ]
                                      }
                                         |> syncCamera screen
                                     )
@@ -372,18 +382,15 @@ gravity delta =
     50 {- px per second -} * delta / 1000
 
 
+deathAcc =
+    30
+
+
 tick : Screen -> Float -> Float -> Input -> GameState -> GameState
 tick screen count delta input state =
     let
         player =
             state.player
-
-        -- Needs to be taken into account from bounds in the map
-        outOfScreen =
-            False
-
-        deathAcc =
-            35
 
         ded =
             case player.status of
@@ -395,9 +402,6 @@ tick screen count delta input state =
     in
     (if ded then
         state
-
-     else if outOfScreen then
-        { state | player = { player | status = Dead count, physics = Physics.push 0 -deathAcc player.physics } }
 
      else
         let
@@ -462,7 +466,7 @@ tick screen count delta input state =
                 }
         }
     )
-        |> physics delta
+        |> physics count delta
         |> syncCamera screen
 
 
@@ -476,51 +480,92 @@ syncCamera screen ({ player, camera } as state) =
     }
 
 
-collisions : GameState -> GameState
-collisions ({ player, map } as state) =
+collisions : Float -> GameState -> GameState
+collisions count ({ player, map } as state) =
     let
         ( newPlayer, newMap ) =
-            List.foldr collisionStep ( { player | grounded = False }, [] ) map
+            List.foldr (collisionStep count) ( { player | grounded = False }, [] ) map
     in
     { state | player = newPlayer, map = newMap }
 
 
-collisionStep : MapTile -> ( Player, Map ) -> ( Player, Map )
-collisionStep tile ( player, map ) =
-    case tile.kind of
-        Platform ->
-            let
-                ( maybeCollisionDirection, movedPlayerObj ) =
-                    Physics.collisionCheck player.physics tile.physics
+collisionStep : Float -> MapTile -> ( Player, Map ) -> ( Player, Map )
+collisionStep count tile ( player, map ) =
+    case player.status of
+        Dead _ ->
+            case tile.kind of
+                Deadly ->
+                    let
+                        ( maybeCollisionDirection, movedPlayerPhysics ) =
+                            Physics.collisionCheck player.physics tile.physics
 
-                newPlayer =
-                    case maybeCollisionDirection of
-                        Just Physics.B ->
-                            { player | grounded = True, physics = { movedPlayerObj | vy = 0 } }
+                        newPlayer =
+                            case maybeCollisionDirection of
+                                Just _ ->
+                                    { player | status = Dead count, physics = movedPlayerPhysics }
 
-                        Just Physics.T ->
-                            { player | physics = { movedPlayerObj | vy = 0 } }
+                                Nothing ->
+                                    player
+                    in
+                    ( newPlayer
+                    , tile :: map
+                    )
 
-                        Just Physics.R ->
-                            { player | physics = { movedPlayerObj | vx = 0 } }
+                _ ->
+                    ( player, tile :: map )
 
-                        Just Physics.L ->
-                            { player | physics = { movedPlayerObj | vx = 0 } }
+        _ ->
+            case tile.kind of
+                Platform ->
+                    let
+                        ( maybeCollisionDirection, movedPlayerPhysics ) =
+                            Physics.collisionCheck player.physics tile.physics
 
-                        Nothing ->
-                            player
-            in
-            ( if newPlayer.physics |> Physics.standingOn tile.physics then
-                { newPlayer | grounded = True }
+                        newPlayer =
+                            case maybeCollisionDirection of
+                                Just Physics.B ->
+                                    { player | grounded = True, physics = { movedPlayerPhysics | vy = 0 } }
 
-              else
-                newPlayer
-            , tile :: map
-            )
+                                Just Physics.T ->
+                                    { player | physics = { movedPlayerPhysics | vy = 0 } }
+
+                                Just Physics.R ->
+                                    { player | physics = { movedPlayerPhysics | vx = 0 } }
+
+                                Just Physics.L ->
+                                    { player | physics = { movedPlayerPhysics | vx = 0 } }
+
+                                Nothing ->
+                                    player
+                    in
+                    ( if newPlayer.physics |> Physics.standingOn tile.physics then
+                        { newPlayer | grounded = True }
+
+                      else
+                        newPlayer
+                    , tile :: map
+                    )
+
+                Deadly ->
+                    let
+                        ( maybeCollisionDirection, movedPlayerPhysics ) =
+                            Physics.collisionCheck player.physics tile.physics
+
+                        newPlayer =
+                            case maybeCollisionDirection of
+                                Just _ ->
+                                    { player | status = Dead count, physics = Physics.push 0 -deathAcc movedPlayerPhysics }
+
+                                Nothing ->
+                                    player
+                    in
+                    ( newPlayer
+                    , tile :: map
+                    )
 
 
-physics : Float -> GameState -> GameState
-physics remainingDelta ({ player } as state) =
+physics : Float -> Float -> GameState -> GameState
+physics count remainingDelta ({ player } as state) =
     let
         maxDelta =
             6
@@ -552,10 +597,10 @@ physics remainingDelta ({ player } as state) =
                         | physics = Physics.integrate frictionX frictionY maxVX (gravity delta) player.physics
                     }
             }
-                |> collisions
+                |> collisions count
     in
     if newRemainingDelta > 0 then
-        physics newRemainingDelta newState
+        physics count newRemainingDelta newState
 
     else
         newState
