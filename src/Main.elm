@@ -38,7 +38,7 @@ type alias Input =
     { left : Bool
     , right : Bool
     , up : Bool
-    , touchLeft : Maybe { started : Float }
+    , touchLeft : Maybe { started : Float, origin : { x : Float, y : Float }, current : { x : Float, y : Float } }
     , touchRight : Maybe { started : Float }
     }
 
@@ -378,14 +378,9 @@ tick screen count delta input state =
         player =
             state.player
 
-        playerDimensions =
-            Texture.dimensions state.assets.char.idle
-
-        floorY =
-            screen.height - playerDimensions.height
-
+        -- Needs to be taken into account from bounds in the map
         outOfScreen =
-            player.physics.y >= floorY
+            False
 
         deathAcc =
             35
@@ -599,61 +594,75 @@ updateTouches event ({ screen, input, count } as model) =
         newInput =
             { input
                 | touchLeft =
-                    let
-                        l =
-                            findTouchInCoords 0 0 (screen.width / 2) screen.height
-                    in
-                    case l of
-                        Nothing ->
-                            Nothing
+                    findTouchInCoords 0 0 (screen.width * 2 / 3) screen.height
+                        |> Maybe.map
+                            (\t ->
+                                case input.touchLeft of
+                                    Nothing ->
+                                        { started = count
+                                        , origin =
+                                            { x = t.clientPos |> Tuple.first
+                                            , y = t.clientPos |> Tuple.second
+                                            }
+                                        , current =
+                                            { x = t.clientPos |> Tuple.first
+                                            , y = t.clientPos |> Tuple.second
+                                            }
+                                        }
 
-                        Just _ ->
-                            case input.touchLeft of
-                                Nothing ->
-                                    Just { started = count }
-
-                                _ ->
-                                    input.touchLeft
+                                    Just tl ->
+                                        { tl
+                                            | current =
+                                                { x = t.clientPos |> Tuple.first
+                                                , y = t.clientPos |> Tuple.second
+                                                }
+                                        }
+                            )
                 , touchRight =
-                    let
-                        l =
-                            findTouchInCoords (screen.width / 2) 0 (screen.width / 2) screen.height
-                    in
-                    case l of
+                    findTouchInCoords (screen.width * 2 / 3) 0 (screen.width / 3) screen.height
+                        |> Maybe.andThen
+                            (\_ ->
+                                case input.touchRight of
+                                    Nothing ->
+                                        Just { started = count }
+
+                                    _ ->
+                                        input.touchRight
+                            )
+            }
+
+        newInputWithTouchRight =
+            { newInput
+                | up =
+                    case newInput.touchRight of
+                        Just right ->
+                            True
+
                         Nothing ->
-                            Nothing
-
-                        Just _ ->
-                            case input.touchRight of
-                                Nothing ->
-                                    Just { started = count }
-
-                                _ ->
-                                    input.touchRight
+                            False
             }
     in
     { model
         | input =
-            case ( newInput.touchLeft, newInput.touchRight ) of
-                ( Just { started }, Nothing ) ->
-                    { newInput | left = True, right = False, up = False }
+            case newInputWithTouchRight.touchLeft of
+                Just { started, origin, current } ->
+                    if abs (current.x - origin.x) > touchMoveThreshold then
+                        if current.x > origin.x then
+                            { newInputWithTouchRight | left = False, right = True }
 
-                ( Nothing, Just { started } ) ->
-                    { newInput | left = False, right = True, up = False }
-
-                ( Just left, Just right ) ->
-                    if left.started < right.started then
-                        { newInput | left = True, right = False, up = True }
-
-                    else if left.started > right.started then
-                        { newInput | left = False, right = True, up = True }
+                        else
+                            { newInputWithTouchRight | left = True, right = False }
 
                     else
-                        { newInput | left = False, right = False, up = True }
+                        { newInputWithTouchRight | left = False, right = False }
 
-                ( Nothing, Nothing ) ->
-                    { newInput | left = False, right = False, up = False }
+                Nothing ->
+                    { newInputWithTouchRight | left = False, right = False }
     }
+
+
+touchMoveThreshold =
+    30
 
 
 view : Model -> Html Msg
