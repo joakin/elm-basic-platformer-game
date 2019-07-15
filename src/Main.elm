@@ -23,7 +23,6 @@ type alias Model =
     { count : Float
     , screen : Screen
     , game : GameStatus
-    , input : Input
     , pageVisibility : Visibility
     }
 
@@ -39,7 +38,7 @@ type alias Input =
     , right : Bool
     , up : Bool
     , touchLeft : Maybe { started : Float, origin : { x : Float, y : Float }, current : { x : Float, y : Float } }
-    , touchRight : Maybe { started : Float }
+    , touchRight : Maybe { started : Float, position : { x : Float, y : Float } }
     }
 
 
@@ -59,6 +58,7 @@ type alias GameState =
     , camera : Camera
     , player : Player
     , map : Map
+    , input : Input
     }
 
 
@@ -162,7 +162,6 @@ init random =
     ( { count = 0
       , screen = { width = 400, height = 400 }
       , game = LoadingAssets (List.length textures) { char = Nothing, tile = Nothing }
-      , input = { left = False, right = False, up = False, touchLeft = Nothing, touchRight = Nothing }
       , pageVisibility = Visible
       }
     , Task.perform GetViewport getViewport
@@ -170,7 +169,7 @@ init random =
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg ({ input, count, screen, game } as model) =
+update msg ({ count, screen, game } as model) =
     -- let
     --     _ =
     --         Debug.log "msg, model" ( msg, model )
@@ -183,7 +182,7 @@ update msg ({ input, count, screen, game } as model) =
                     count + delta
 
                 newGame =
-                    state |> tick screen newCount delta input
+                    state |> tick screen newCount delta
             in
             ( { model
                 | count = newCount
@@ -215,23 +214,23 @@ update msg ({ input, count, screen, game } as model) =
         ( PageVisibilityChanged vis, _ ) ->
             ( { model | pageVisibility = vis }, Cmd.none )
 
-        ( KeyDown key, _ ) ->
-            ( updateKeys key True model, Cmd.none )
+        ( KeyDown key, GameStarted state ) ->
+            ( { model | game = GameStarted <| updateKeys key True state }, Cmd.none )
 
-        ( KeyUp key, _ ) ->
-            ( updateKeys key False model, Cmd.none )
+        ( KeyUp key, GameStarted state ) ->
+            ( { model | game = GameStarted <| updateKeys key False state }, Cmd.none )
 
-        ( TouchStart event, _ ) ->
-            ( updateTouches event model, Cmd.none )
+        ( TouchStart event, GameStarted state ) ->
+            ( { model | game = GameStarted <| updateTouches event count screen state }, Cmd.none )
 
-        ( TouchMove event, _ ) ->
-            ( updateTouches event model, Cmd.none )
+        ( TouchMove event, GameStarted state ) ->
+            ( { model | game = GameStarted <| updateTouches event count screen state }, Cmd.none )
 
-        ( TouchEnd event, _ ) ->
-            ( updateTouches event model, Cmd.none )
+        ( TouchEnd event, GameStarted state ) ->
+            ( { model | game = GameStarted <| updateTouches event count screen state }, Cmd.none )
 
-        ( TouchCancel event, _ ) ->
-            ( updateTouches event model, Cmd.none )
+        ( TouchCancel event, GameStarted state ) ->
+            ( { model | game = GameStarted <| updateTouches event count screen state }, Cmd.none )
 
         ( AssetLoaded assetKind maybeAsset, LoadingAssets remaining_ assets_ ) ->
             let
@@ -259,7 +258,14 @@ update msg ({ input, count, screen, game } as model) =
                         { model
                             | game =
                                 GameStarted
-                                    ({ assets =
+                                    ({ input =
+                                        { left = False
+                                        , right = False
+                                        , up = False
+                                        , touchLeft = Nothing
+                                        , touchRight = Nothing
+                                        }
+                                     , assets =
                                         { charSpriteSheet = charSpriteSheet
                                         , tileSpriteSheet = tileSpriteSheet
                                         , char = char
@@ -386,12 +392,9 @@ deathAcc =
     30
 
 
-tick : Screen -> Float -> Float -> Input -> GameState -> GameState
-tick screen count delta input state =
+tick : Screen -> Float -> Float -> GameState -> GameState
+tick screen count delta ({ player, input } as state) =
     let
-        player =
-            state.player
-
         ded =
             case player.status of
                 Dead f ->
@@ -554,7 +557,10 @@ collisionStep count tile ( player, map ) =
                         newPlayer =
                             case maybeCollisionDirection of
                                 Just _ ->
-                                    { player | status = Dead count, physics = Physics.push 0 -deathAcc movedPlayerPhysics }
+                                    { player
+                                        | status = Dead count
+                                        , physics = Physics.push 0 -deathAcc movedPlayerPhysics
+                                    }
 
                                 Nothing ->
                                     player
@@ -606,31 +612,31 @@ physics count remainingDelta ({ player } as state) =
         newState
 
 
-updateKeys : String -> Bool -> Model -> Model
-updateKeys key isDown ({ input } as model) =
+updateKeys : String -> Bool -> { a | input : Input } -> { a | input : Input }
+updateKeys key isDown ({ input } as obj) =
     case key of
         "ArrowUp" ->
-            { model | input = { input | up = isDown } }
+            { obj | input = { input | up = isDown } }
 
         "ArrowLeft" ->
-            { model | input = { input | left = isDown } }
+            { obj | input = { input | left = isDown } }
 
         "ArrowRight" ->
-            { model | input = { input | right = isDown } }
+            { obj | input = { input | right = isDown } }
 
         _ ->
-            model
+            obj
 
 
-updateTouches : Touch.Event -> Model -> Model
-updateTouches event ({ screen, input, count } as model) =
+updateTouches : Touch.Event -> Float -> Screen -> { a | input : Input } -> { a | input : Input }
+updateTouches event count screen ({ input } as obj) =
     let
         findTouchInCoords x y w h =
             List.find
                 (\t ->
                     let
                         ( tx, ty ) =
-                            t.clientPos
+                            t.pagePos
                     in
                     tx > x && tx < x + w && ty > y && ty < y + h
                 )
@@ -646,30 +652,36 @@ updateTouches event ({ screen, input, count } as model) =
                                     Nothing ->
                                         { started = count
                                         , origin =
-                                            { x = t.clientPos |> Tuple.first
-                                            , y = t.clientPos |> Tuple.second
+                                            { x = t.pagePos |> Tuple.first
+                                            , y = t.pagePos |> Tuple.second
                                             }
                                         , current =
-                                            { x = t.clientPos |> Tuple.first
-                                            , y = t.clientPos |> Tuple.second
+                                            { x = t.pagePos |> Tuple.first
+                                            , y = t.pagePos |> Tuple.second
                                             }
                                         }
 
                                     Just tl ->
                                         { tl
                                             | current =
-                                                { x = t.clientPos |> Tuple.first
-                                                , y = t.clientPos |> Tuple.second
+                                                { x = t.pagePos |> Tuple.first
+                                                , y = t.pagePos |> Tuple.second
                                                 }
                                         }
                             )
                 , touchRight =
                     findTouchInCoords (screen.width * 2 / 3) 0 (screen.width / 3) screen.height
                         |> Maybe.andThen
-                            (\_ ->
+                            (\t ->
                                 case input.touchRight of
                                     Nothing ->
-                                        Just { started = count }
+                                        Just
+                                            { started = count
+                                            , position =
+                                                { x = t.pagePos |> Tuple.first
+                                                , y = t.pagePos |> Tuple.second
+                                                }
+                                            }
 
                                     _ ->
                                         input.touchRight
@@ -687,7 +699,7 @@ updateTouches event ({ screen, input, count } as model) =
                             False
             }
     in
-    { model
+    { obj
         | input =
             case newInputWithTouchRight.touchLeft of
                 Just { started, origin, current } ->
@@ -741,16 +753,37 @@ render count screen game =
         LoadingAssets _ _ ->
             [ text [ font { family = "sans-serif", size = 48 } ] ( screen.width / 2, screen.height / 2 ) "Loading..." ]
 
-        GameStarted { assets, camera, player, map } ->
+        GameStarted { assets, camera, player, map, input } ->
             -- Sprites.tileSpriteSheetDebugRenderable assets.tileSpriteSheet ++
             renderMap screen camera map
                 ++ [ renderPlayer screen count camera player
 
                    -- , debugBox ( player.physics.x + player.physics.bx, player.physics.y + player.physics.by ) player.physics.bw player.physics.bh
                    ]
+                ++ renderInput screen count input
 
         LoadingFailed ->
             [ text [ font { family = "sans-serif", size = 48 } ] ( screen.width / 2, screen.height / 2 ) "Loading failed.\nPlease reload." ]
+
+
+renderInput : Screen -> Float -> Input -> List Renderable
+renderInput screen count input =
+    List.concat
+        [ case input.touchLeft of
+            Just { started, origin, current } ->
+                [ shapes [ fill Color.white, stroke Color.lightGray ] [ circle ( origin.x, origin.y ) 30 ]
+                , shapes [ fill Color.lightGray, stroke Color.white ] [ circle ( current.x, current.y ) 25 ]
+                ]
+
+            Nothing ->
+                []
+        , case input.touchRight of
+            Just { started, position } ->
+                [ shapes [ fill (Color.rgb 1 0.8 0.8), stroke Color.white ] [ circle ( position.x, position.y ) 40 ] ]
+
+            Nothing ->
+                []
+        ]
 
 
 renderMap : Screen -> Camera -> Map -> List Renderable
