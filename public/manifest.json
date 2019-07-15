@@ -1,0 +1,7 @@
+{
+  "short_name": "Elm platformer",
+  "name": "Elm platformer",
+  "background_color": "#ffffff",
+  "display": "fullscreen",
+  "theme_color": "#ffffff"
+}
